@@ -6,6 +6,14 @@ import Image from "next/image";
 
 // --- Helper Functions ---
 
+const formatPercentage = (value: number): string => {
+  const percentage = value * 100;
+  if (percentage < 1) return "<1%";
+  if (percentage > 99 && percentage < 100) return ">99%";
+  // Handle 0 specifically if needed, though Math.round(0) is 0
+  return `${Math.round(percentage)}%`;
+};
+
 const getOutcomes = (market: Market): string[] => {
   if (!market.outcomes) return [];
   if (Array.isArray(market.outcomes)) return market.outcomes;
@@ -46,7 +54,7 @@ const formatVolume = (volume?: string) => {
   if (!volume) return "$0";
   const num = parseFloat(volume);
   if (num >= 1000000) {
-    return `$${(num / 1000000).toFixed(1)}M`;
+    return `$${(num / 1000000).toFixed(0)}m`;
   }
   if (num >= 1000) {
     return `$${(num / 1000).toFixed(1)}K`;
@@ -71,7 +79,13 @@ const formatDate = (dateString?: string) => {
 
 // --- Sub-components ---
 
-const CircularProgress = ({ percentage }: { percentage: number }) => {
+const CircularProgress = ({
+  value,
+  label,
+}: {
+  value: number;
+  label?: string;
+}) => {
   const radius = 29;
   // Angles in degrees (Standard SVG: 0 is Right, 90 is Down)
   // Start at 170 (Left-Bottom)
@@ -96,7 +110,7 @@ const CircularProgress = ({ percentage }: { percentage: number }) => {
   // 0% -> 170
   // 100% -> 370
   const totalSpan = 200;
-  const progressAngle = 170 + (percentage / 100) * totalSpan;
+  const progressAngle = 170 + value * totalSpan;
 
   const createPath = (end: number) => {
     const start = polarToCartesian(0, 0, radius, startAngle);
@@ -127,9 +141,7 @@ const CircularProgress = ({ percentage }: { percentage: number }) => {
           <path
             d={createPath(progressAngle)}
             fill="none"
-            className={
-              percentage > 50 ? "stroke-[#00C08B]" : "stroke-[#E65050]"
-            }
+            className={value > 0.5 ? "stroke-[#00C08B]" : "stroke-[#E65050]"}
             strokeOpacity="0.811"
             strokeWidth="4.5"
             strokeLinecap="round"
@@ -141,7 +153,7 @@ const CircularProgress = ({ percentage }: { percentage: number }) => {
           className="font-medium text-[18px] text-[#f2f2f2] text-center leading-none"
           style={{ fontFamily: "'Open Sauce One', sans-serif" }}
         >
-          {percentage}%
+          {label || formatPercentage(value)}
         </p>
         <p
           className="font-bold text-[#899cb2] text-[11px] text-center line-clamp-2 leading-none mt-1.5"
@@ -160,10 +172,10 @@ const BinaryContent = () => {
     <div className="mt-auto">
       {/* Buttons */}
       <div className="grid grid-cols-2 gap-2 mt-4">
-        <button className="bg-[#0E4F43]/60 hover:bg-[#0E4F43] text-[#00C08B] py-2 rounded text-base font-bold transition-colors">
+        <button className="bg-[#0E4F43]/40 hover:bg-[#0E4F43]/60 text-[#00C08B] py-2 rounded text-base font-bold transition-colors">
           Yes
         </button>
-        <button className="bg-[#4F181E]/60 hover:bg-[#4F181E] text-[#E65050] py-2 rounded text-base font-bold transition-colors">
+        <button className="bg-[#4F181E]/40 hover:bg-[#4F181E]/60 text-[#E65050] py-2 rounded text-base font-bold transition-colors">
           No
         </button>
       </div>
@@ -176,26 +188,30 @@ const VersusContent = ({ market }: { market: Market }) => {
   const outcomes = getOutcomes(market);
   const outcome1 = outcomes[0] || "Team 1";
   const outcome2 = outcomes[1] || "Team 2";
-  const price1 = Math.round((prices[0] || 0) * 100);
-  const price2 = Math.round((prices[1] || 0) * 100);
+  const price1 = prices[0] || 0;
+  const price2 = prices[1] || 0;
 
   return (
     <div className="mt-auto space-y-3">
       {/* Team 1 */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-gray-300 truncate pr-2">{outcome1}</span>
-        <span className="text-[#00C08B] font-medium">{price1}%</span>
+        <span className="text-[#00C08B] font-medium">
+          {formatPercentage(price1)}
+        </span>
       </div>
       {/* Team 2 */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-gray-300 truncate pr-2">{outcome2}</span>
-        <span className="text-[#E65050] font-medium">{price2}%</span>
+        <span className="text-[#E65050] font-medium">
+          {formatPercentage(price2)}
+        </span>
       </div>
 
       {/* Bar */}
       <div className="flex w-full h-1.5 rounded-full overflow-hidden bg-[#1D2B3A]">
-        <div className="bg-[#00C08B]" style={{ width: `${price1}%` }} />
-        <div className="bg-[#E65050]" style={{ width: `${price2}%` }} />
+        <div className="bg-[#00C08B]" style={{ width: `${price1 * 100}%` }} />
+        <div className="bg-[#E65050]" style={{ width: `${price2 * 100}%` }} />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -223,14 +239,16 @@ const MultipleChoiceContent = ({ market }: { market: Market }) => {
   return (
     <div className="mt-auto space-y-2">
       {sortedIndices.map((idx) => {
-        const prob = Math.round((prices[idx] || 0) * 100);
+        const prob = prices[idx] || 0;
         return (
           <div key={idx} className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <div className="w-1 h-4 bg-gray-600 rounded-full" />
               <span className="text-gray-300 truncate">{outcomes[idx]}</span>
             </div>
-            <span className="text-white font-medium ml-2">{prob}%</span>
+            <span className="text-white font-medium ml-2">
+              {formatPercentage(prob)}
+            </span>
           </div>
         );
       })}
@@ -262,7 +280,7 @@ const GroupedContent = ({ markets }: { markets: Market[] }) => {
           displayLabel = displayLabel.substring(0, 25) + "...";
 
         if (isBinary) {
-          const yesPrice = Math.round((prices[yesIndex] || 0) * 100);
+          const yesPrice = prices[yesIndex] || 0;
           return (
             <div
               key={market.condition_id || idx}
@@ -272,14 +290,14 @@ const GroupedContent = ({ markets }: { markets: Market[] }) => {
                 {displayLabel}
               </span>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[#00C08B] font-medium text-base">
-                  {yesPrice}%
+                <span className="text-white font-bold text-base">
+                  {formatPercentage(yesPrice)}
                 </span>
                 <div className="flex gap-1">
-                  <div className="w-11 h-7 flex items-center justify-center bg-[#0E4F43]/60 text-[#00C08B] rounded text-xs font-bold">
+                  <div className="w-11 h-7 flex items-center justify-center bg-[#0E4F43]/40 text-[#00C08B] rounded text-xs font-bold">
                     Yes
                   </div>
-                  <div className="w-11 h-7 flex items-center justify-center bg-[#4F181E]/60 text-[#E65050] rounded text-xs font-bold">
+                  <div className="w-11 h-7 flex items-center justify-center bg-[#4F181E]/40 text-[#E65050] rounded text-xs font-bold">
                     No
                   </div>
                 </div>
@@ -298,7 +316,7 @@ const GroupedContent = ({ markets }: { markets: Market[] }) => {
                 {displayLabel}
               </span>
               <span className="text-white font-medium text-base">
-                {Math.round(maxPrice * 100)}%
+                {formatPercentage(maxPrice)}
               </span>
             </div>
           );
@@ -314,19 +332,41 @@ interface EventCardProps {
 
 export default function EventCard({ event }: EventCardProps) {
   const [imageError, setImageError] = useState(false);
-  const { variant, marketsToDisplay } = useMemo(() => {
-    const markets = event.markets || [];
 
+  const validMarkets = useMemo(() => {
+    const active = (event.markets || []).filter(
+      (m) => (m.active || (m.volume && parseFloat(m.volume) > 0)) && !m.closed
+    );
+
+    // Sort by price descending
+    return active.sort((a, b) => {
+      const pricesA = getPrices(a);
+      const outcomesA = getOutcomes(a);
+      const yesIndexA = outcomesA.findIndex((o) => o.toLowerCase() === "yes");
+      const priceA =
+        yesIndexA !== -1 ? pricesA[yesIndexA] : Math.max(...pricesA, 0);
+
+      const pricesB = getPrices(b);
+      const outcomesB = getOutcomes(b);
+      const yesIndexB = outcomesB.findIndex((o) => o.toLowerCase() === "yes");
+      const priceB =
+        yesIndexB !== -1 ? pricesB[yesIndexB] : Math.max(...pricesB, 0);
+
+      return (priceB || 0) - (priceA || 0);
+    });
+  }, [event.markets]);
+
+  const { variant, marketsToDisplay } = useMemo(() => {
     // Grouped Variant: Multiple markets (e.g. Sports Dailies, Series)
-    if (markets.length > 1) {
+    if (validMarkets.length > 1) {
       return {
         variant: "grouped" as const,
-        marketsToDisplay: markets.slice(0, 3),
+        marketsToDisplay: validMarkets.slice(0, 3),
       };
     }
 
     // Single Market Variants
-    const market = markets[0];
+    const market = validMarkets[0];
     if (!market) return { variant: "unknown" as const, marketsToDisplay: [] };
 
     const outcomes = getOutcomes(market);
@@ -344,18 +384,18 @@ export default function EventCard({ event }: EventCardProps) {
     }
 
     return { variant: "multiple_choice" as const, marketsToDisplay: [market] };
-  }, [event]);
+  }, [validMarkets]);
 
   const primaryMarket = marketsToDisplay[0];
   const prices = primaryMarket ? getPrices(primaryMarket) : [];
   const outcomes = primaryMarket ? getOutcomes(primaryMarket) : [];
   const yesIndex = outcomes.findIndex((o) => o.toLowerCase() === "yes");
 
-  let displayPercentage = 0;
+  let displayValue = 0;
   let showMeter = false;
 
   if (variant === "binary") {
-    displayPercentage = Math.round((prices[yesIndex] || 0) * 100);
+    displayValue = prices[yesIndex] || 0;
     showMeter = true;
   }
 
@@ -380,18 +420,11 @@ export default function EventCard({ event }: EventCardProps) {
 
           <div className="flex-1 min-w-0 flex flex-col justify-center min-h-[32px]">
             {/* Badges */}
-            {(event.new || event.featured) && (
+            {event.new && (
               <div className="flex items-center gap-2 mb-1">
-                {event.new && (
-                  <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                    New
-                  </span>
-                )}
-                {event.featured && (
-                  <span className="bg-purple-500/20 text-purple-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                    Featured
-                  </span>
-                )}
+                <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                  New
+                </span>
               </div>
             )}
 
@@ -404,7 +437,7 @@ export default function EventCard({ event }: EventCardProps) {
         {/* Right Side: Meter (Only for Binary) */}
         {showMeter && (
           <div className="relative shrink-0">
-            <CircularProgress percentage={displayPercentage} />
+            <CircularProgress value={displayValue} />
           </div>
         )}
       </div>
@@ -416,9 +449,7 @@ export default function EventCard({ event }: EventCardProps) {
         {variant === "multiple_choice" && (
           <MultipleChoiceContent market={marketsToDisplay[0]} />
         )}
-        {variant === "grouped" && (
-          <GroupedContent markets={event.markets || []} />
-        )}
+        {variant === "grouped" && <GroupedContent markets={validMarkets} />}
         {variant === "unknown" && <div className="h-4" />}
       </div>
 
