@@ -24,6 +24,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://polymarket-upload.s3.us-east-2.amazonaws.com" />
+        <link rel="dns-prefetch" href="https://polymarket-upload.s3.us-east-2.amazonaws.com" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

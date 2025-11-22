@@ -2,9 +2,22 @@
 
 import { useState, useRef, useEffect } from "react";
 
-export default function FilterSection() {
+interface FilterSectionProps {
+  onFiltersChange?: (filters: {
+    activeTag: string;
+    sortBy: string;
+    frequency: string;
+    status: string;
+    hideSports: boolean;
+    hideCrypto: boolean;
+    hideEarnings: boolean;
+    searchQuery: string;
+  }) => void;
+}
+
+export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
   const [filtersVisible, setFiltersVisible] = useState(false);
-  const [sortBy, setSortBy] = useState("24hr Volume");
+  const [sortBy, setSortBy] = useState("Trending");
   const [frequency, setFrequency] = useState("All");
   const [status, setStatus] = useState("Active");
   const [hideSports, setHideSports] = useState(false);
@@ -13,11 +26,37 @@ export default function FilterSection() {
   const [sortOpen, setSortOpen] = useState(false);
   const [frequencyOpen, setFrequencyOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
-  const [scrollPosition, setScrollPosition] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [activeTag, setActiveTag] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Notify parent of filter changes
+  useEffect(() => {
+    if (onFiltersChange) {
+      onFiltersChange({
+        activeTag,
+        sortBy,
+        frequency,
+        status,
+        hideSports,
+        hideCrypto,
+        hideEarnings,
+        searchQuery,
+      });
+    }
+  }, [
+    activeTag,
+    sortBy,
+    frequency,
+    status,
+    hideSports,
+    hideCrypto,
+    hideEarnings,
+    searchQuery,
+    onFiltersChange,
+  ]);
 
   const tags = [
     "All",
@@ -56,7 +95,6 @@ export default function FilterSection() {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
       setCanScrollLeft(scrollLeft > 5);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
-      setScrollPosition(scrollLeft);
     }
   };
 
@@ -94,12 +132,14 @@ export default function FilterSection() {
   return (
     <div className="bg-[#1D2B3A]">
       {/* Search and Filter Bar */}
-      <div className="flex items-center gap-4 px-[8%] py-3">
+      <div className="flex items-center gap-4 px-[6%] py-3">
         {/* Search */}
         <div className="relative w-53">
           <input
             type="text"
             placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#2f3f50] text-white placeholder-gray-400 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <svg
@@ -163,7 +203,7 @@ export default function FilterSection() {
           <div
             className={`absolute top-0 bottom-0 z-10 flex items-center pointer-events-none ${
               canScrollLeft ? "opacity-100" : "opacity-0"
-            } transition-opacity duration-200 bg-gradient-to-r from-[#1D2B3A] via-[#1D2B3A] to-transparent pl-2 pr-8`}
+            } transition-opacity duration-200 bg-linear-to-r from-[#1D2B3A] via-[#1D2B3A] to-transparent pl-2 pr-8`}
             style={{ left: "-15px" }}
           >
             <button
@@ -217,7 +257,7 @@ export default function FilterSection() {
               <button
                 key={index}
                 onClick={() => setActiveTag(tag)}
-                className={`whitespace-nowrap flex-shrink-0 m-0 px-3 py-1.5 rounded-md ${
+                className={`whitespace-nowrap shrink-0 m-0 px-3 py-1.5 rounded-md ${
                   activeTag === tag
                     ? "bg-[#20415A] text-[#2C9CDB]"
                     : "text-gray-400 hover:text-white"
@@ -233,7 +273,7 @@ export default function FilterSection() {
           <div
             className={`absolute right-0 top-0 bottom-0 z-10 flex items-center pointer-events-none ${
               canScrollRight ? "opacity-100" : "opacity-0"
-            } transition-opacity duration-200 bg-gradient-to-l from-[#1D2B3A] via-[#1D2B3A] to-transparent pr-2 pl-8`}
+            } transition-opacity duration-200 bg-linear-to-l from-[#1D2B3A] via-[#1D2B3A] to-transparent pr-2 pl-8`}
           >
             <button
               onClick={scrollRight}
@@ -256,7 +296,7 @@ export default function FilterSection() {
 
       {/* Sorting and Options - Only visible when filter button is clicked */}
       {filtersVisible && (
-        <div className="flex items-center gap-6 px-[8%] py-3 border-t border-[#2A3F54]">
+        <div className="flex items-center gap-6 px-[6%] py-3 border-t border-[#2A3F54]">
           {/* Sort By */}
           <div className="relative">
             <button
@@ -279,6 +319,25 @@ export default function FilterSection() {
 
             {sortOpen && (
               <div className="absolute left-0 mt-2 w-48 bg-[#2A3F54] rounded-lg shadow-lg py-2 z-50">
+                <button
+                  onClick={() => {
+                    setSortBy("Trending");
+                    setSortOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-white hover:bg-[#3D5266] flex items-center gap-2"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  </svg>
+                  <span>Trending</span>
+                </button>
                 <button
                   onClick={() => {
                     setSortBy("24hr Volume");

@@ -8,7 +8,6 @@ export default function Header() {
   const [activeMoreItem, setActiveMoreItem] = useState("");
   const [scrollPosition, setScrollPosition] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const categories = [
@@ -32,10 +31,8 @@ export default function Header() {
       if (scrollContainerRef.current) {
         const container = scrollContainerRef.current;
         const scrollLeft = container.scrollLeft;
-        const maxScroll = container.scrollWidth - container.clientWidth;
 
         setCanScrollLeft(scrollLeft > 0);
-        setCanScrollRight(scrollLeft < maxScroll - 1); // -1 for rounding
       }
     };
 
@@ -46,21 +43,6 @@ export default function Header() {
 
     return () => window.removeEventListener("resize", updateScrollIndicators);
   }, [scrollPosition]);
-
-  const handleScrollRight = () => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const scrollAmount = container.clientWidth / 2;
-      const newPosition = scrollPosition + scrollAmount;
-
-      container.scrollTo({
-        left: newPosition,
-        behavior: "smooth",
-      });
-
-      setScrollPosition(newPosition);
-    }
-  };
 
   const handleScrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -80,7 +62,7 @@ export default function Header() {
   return (
     <header className="bg-[#1D2B3A] border-b border-[#2A3F54]">
       {/* Top Header */}
-      <div className="flex items-center justify-between px-[8%] pt-4 pb-2">
+      <div className="flex items-center justify-between px-[6%] pt-4 pb-2">
         {/* Left: Logo and Search */}
         <div className="flex items-center gap-4 flex-1">
           {/* Logo */}
@@ -251,7 +233,7 @@ export default function Header() {
           </button>
         )}
 
-        <div className="flex items-center px-[8%] py-3 overflow-visible">
+        <div className="flex items-center px-[6%] py-3 overflow-visible">
           {/* Scrollable Categories Container */}
           <div
             ref={scrollContainerRef}
@@ -329,7 +311,7 @@ export default function Header() {
         {/* Dropdown positioned outside overflow container */}
         {navMoreOpen && (
           <div
-            className="absolute right-[8%] top-full bg-[#1D2B3A] border border-[#2A3F54] rounded-lg shadow-lg py-2 z-[100] min-w-[180px]"
+            className="absolute right-[6%] top-full bg-[#1D2B3A] border border-[#2A3F54] rounded-lg shadow-lg py-2 z-100 min-w-[180px]"
             style={{ fontSize: "15px" }}
             onMouseEnter={() => setNavMoreOpen(true)}
             onMouseLeave={() => setNavMoreOpen(false)}
