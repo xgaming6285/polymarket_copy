@@ -259,7 +259,7 @@ export default function Header() {
               <span className="font-medium">Trending</span>
             </a>
             <a
-              href="#"
+              href="/breaking"
               className="text-gray-400 hover:text-gray-300 whitespace-nowrap pointer-events-auto"
             >
               Breaking
