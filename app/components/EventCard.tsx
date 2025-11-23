@@ -456,7 +456,7 @@ export default function EventCard({ event, isActive = false, onActivate, onDeact
 
   return (
     <div
-      className={`bg-[#2A3F54] rounded-lg p-4 hover:bg-[#324858] transition-all duration-200 cursor-pointer h-full flex flex-col border border-transparent hover:border-gray-700 shadow-lg relative overflow-hidden group ${
+      className={`bg-[#2A3F54] rounded-lg p-4 transition-all duration-200 cursor-pointer h-full flex flex-col border border-transparent shadow-lg relative overflow-hidden group ${
         isActive ? "h-full" : ""
       }`}
     >
@@ -466,7 +466,7 @@ export default function EventCard({ event, isActive = false, onActivate, onDeact
         <div className="flex items-start gap-3 flex-1 min-w-0 pr-2">
           {(event.icon || event.image) && !imageError && (
             <div
-              className={`rounded overflow-hidden shrink-0 bg-[#1D2B3A] ring-2 ring-[#1D2B3A] group-hover:ring-gray-600 transition-all duration-300 ease-in-out ${
+              className={`rounded overflow-hidden shrink-0 bg-[#1D2B3A] ring-2 ring-[#1D2B3A] transition-all duration-300 ease-in-out ${
                 isActive
                   ? "w-6 h-6 absolute -top-2 -left-1 z-20"
                   : "w-10 h-10 relative"
@@ -497,7 +497,7 @@ export default function EventCard({ event, isActive = false, onActivate, onDeact
             )}
 
             <h3
-              className={`text-white font-bold leading-tight line-clamp-2 group-hover:text-blue-200 transition-all duration-300 ${
+              className={`text-white font-bold leading-tight line-clamp-2 transition-all duration-300 ${
                 isActive ? "text-[13px] pr-6" : "text-[15px]"
               }`}
             >
@@ -593,7 +593,7 @@ export default function EventCard({ event, isActive = false, onActivate, onDeact
       )}
 
       {/* Hover Gradient */}
-      <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 opacity-0 transition-opacity pointer-events-none" />
     </div>
   );
 }
