@@ -1,0 +1,85 @@
+
+"use client";
+
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { PriceHistory } from "../lib/polymarket-advanced";
+
+interface ChartSeries {
+  name: string;
+  data: PriceHistory[];
+  color: string;
+}
+
+interface EventChartProps {
+  series: ChartSeries[];
+}
+
+export default function EventChart({ series }: EventChartProps) {
+  if (!series || series.length === 0) return null;
+
+  // Merge data based on timestamp
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const timestampMap = new Map<number, any>();
+
+  series.forEach((s, index) => {
+    if (!s.data) return;
+    const key = `series_${index}`;
+    s.data.forEach(point => {
+      const time = point.t * 1000; // Convert to ms
+      if (!timestampMap.has(time)) {
+        timestampMap.set(time, { time });
+      }
+      const entry = timestampMap.get(time);
+      entry[key] = point.p;
+    });
+  });
+
+  const chartData = Array.from(timestampMap.values()).sort((a, b) => a.time - b.time);
+
+  const formatTime = (time: number) => {
+    return new Date(time).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
+
+  const formatPrice = (price: number) => {
+    return `${(price * 100).toFixed(0)}¢`;
+  };
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={chartData}>
+        <XAxis 
+            dataKey="time" 
+            tickFormatter={formatTime} 
+            stroke="#899cb2" 
+            tick={{ fontSize: 12 }}
+            minTickGap={50}
+        />
+        <YAxis 
+            tickFormatter={formatPrice} 
+            stroke="#899cb2" 
+            tick={{ fontSize: 12 }}
+            domain={[0, 1]}
+        />
+        <Tooltip 
+            contentStyle={{ backgroundColor: '#1D2B3A', borderColor: '#2A3F54', color: '#fff' }}
+            labelFormatter={(label) => new Date(label).toLocaleString()}
+            formatter={(value: number, name: string) => [`${(value * 100).toFixed(1)}¢`, name]}
+        />
+        <Legend />
+        {series.map((s, index) => (
+          <Line 
+            key={s.name}
+            name={s.name}
+            type="monotone" 
+            dataKey={`series_${index}`} 
+            stroke={s.color} 
+            strokeWidth={2} 
+            dot={false} 
+            activeDot={{ r: 4 }}
+            connectNulls 
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}

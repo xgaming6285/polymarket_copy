@@ -1,6 +1,13 @@
 // Polymarket API Client
 // Use our Next.js API routes to avoid CORS issues
-const API_BASE = "/api";
+
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") return ""; // Browser should use relative path
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000"; // Default to localhost
+};
+
+const API_BASE = `${getBaseUrl()}/api`;
 
 // Types
 export interface Market {
@@ -182,6 +189,16 @@ export async function fetchEventById(eventId: string): Promise<Event> {
   } catch (error) {
     console.error("Error fetching event:", error);
     throw error;
+  }
+}
+
+export async function fetchEventBySlug(slug: string): Promise<Event | null> {
+  try {
+    const events = await fetchEvents({ slug });
+    return events[0] || null;
+  } catch (error) {
+    console.error("Error fetching event by slug:", error);
+    return null;
   }
 }
 

@@ -44,14 +44,29 @@ export async function fetchPriceHistory(
   params?: {
     interval?: "1m" | "5m" | "1h" | "1d";
     fidelity?: number;
+    startTs?: number;
+    endTs?: number;
   }
 ): Promise<PriceHistory[]> {
   const queryParams = new URLSearchParams();
   
   if (params?.interval) queryParams.append("interval", params.interval);
   if (params?.fidelity) queryParams.append("fidelity", params.fidelity.toString());
+  
+  if (params?.startTs) {
+    queryParams.append("startTs", params.startTs.toString());
+  } else {
+    // Default to 30 days ago if not provided, to ensure we get data
+    const defaultStartTs = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+    queryParams.append("startTs", defaultStartTs.toString());
+  }
 
-  const url = `${CLOB_API_BASE}/prices-history?token_id=${tokenId}&${queryParams.toString()}`;
+  if (params?.endTs) {
+    queryParams.append("endTs", params.endTs.toString());
+  }
+
+  // API expects 'market' parameter for the token ID
+  const url = `${CLOB_API_BASE}/prices-history?market=${tokenId}&${queryParams.toString()}`;
   
   try {
     const response = await fetch(url, {
@@ -86,11 +101,25 @@ export async function fetchOrderBook(tokenId: string): Promise<OrderBookSummary>
     });
 
     if (!response.ok) {
+      if (response.status === 404) {
+        // Return empty book for 404 (no book exists)
+        return {
+          market: "",
+          asset_id: tokenId,
+          bids: [],
+          asks: [],
+          timestamp: Date.now()
+        };
+      }
       throw new Error(`Failed to fetch order book: ${response.status}`);
     }
 
     return await response.json();
   } catch (error) {
+    // Don't log 404s as errors
+    if (error instanceof Error && error.message.includes("404")) {
+      throw error;
+    }
     console.error("Error fetching order book:", error);
     throw error;
   }

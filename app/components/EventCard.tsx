@@ -4,6 +4,7 @@ import { Event, Market } from "../lib/polymarket";
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import InlineTrade from "./InlineTrade";
+import { useRouter } from "next/navigation";
 
 // --- Helper Functions ---
 
@@ -459,8 +460,11 @@ export default function EventCard({
     }
   };
 
+  const router = useRouter();
+
   return (
     <div
+      onClick={() => router.push(`/event/${event.slug}`)}
       className={`bg-[#2A3F54] rounded-lg p-4 transition-all duration-200 cursor-pointer h-full flex flex-col border border-transparent shadow-lg relative overflow-hidden group ${
         isActive ? "h-full" : ""
       }`}
