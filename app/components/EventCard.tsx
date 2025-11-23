@@ -365,11 +365,13 @@ const GroupedContent = ({
 
 interface EventCardProps {
   event: Event;
+  isActive?: boolean;
+  onActivate?: () => void;
+  onDeactivate?: () => void;
 }
 
-export default function EventCard({ event }: EventCardProps) {
+export default function EventCard({ event, isActive = false, onActivate, onDeactivate }: EventCardProps) {
   const [imageError, setImageError] = useState(false);
-  const [isInlineTrading, setIsInlineTrading] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [selectedOutcome, setSelectedOutcome] = useState<"Yes" | "No" | string>(
     "Yes"
@@ -441,17 +443,21 @@ export default function EventCard({ event }: EventCardProps) {
   const handleTrade = (market: Market, outcome: "Yes" | "No" | string) => {
     setSelectedMarket(market);
     setSelectedOutcome(outcome);
-    setIsInlineTrading(true);
+    if (onActivate) {
+      onActivate();
+    }
   };
 
   const handleCloseTrade = () => {
-    setIsInlineTrading(false);
+    if (onDeactivate) {
+      onDeactivate();
+    }
   };
 
   return (
     <div
       className={`bg-[#2A3F54] rounded-lg p-4 hover:bg-[#324858] transition-all duration-200 cursor-pointer h-full flex flex-col border border-transparent hover:border-gray-700 shadow-lg relative overflow-hidden group ${
-        isInlineTrading ? "h-full" : ""
+        isActive ? "h-full" : ""
       }`}
     >
       {/* Top Section */}
@@ -461,7 +467,7 @@ export default function EventCard({ event }: EventCardProps) {
           {(event.icon || event.image) && !imageError && (
             <div
               className={`rounded overflow-hidden shrink-0 bg-[#1D2B3A] ring-2 ring-[#1D2B3A] group-hover:ring-gray-600 transition-all duration-300 ease-in-out ${
-                isInlineTrading
+                isActive
                   ? "w-6 h-6 absolute -top-2 -left-1 z-20"
                   : "w-10 h-10 relative"
               }`}
@@ -479,10 +485,10 @@ export default function EventCard({ event }: EventCardProps) {
 
           <div
             className={`flex-1 min-w-0 flex flex-col justify-center transition-all duration-300 ${
-              isInlineTrading ? "pl-8 -mt-1.5 min-h-[20px]" : "min-h-[32px]"
+              isActive ? "pl-8 -mt-1.5 min-h-[20px]" : "min-h-[32px]"
             }`}
           >
-            {event.new && !isInlineTrading && (
+            {event.new && !isActive && (
               <div className="flex items-center gap-2 mb-1">
                 <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                   New
@@ -492,7 +498,7 @@ export default function EventCard({ event }: EventCardProps) {
 
             <h3
               className={`text-white font-bold leading-tight line-clamp-2 group-hover:text-blue-200 transition-all duration-300 ${
-                isInlineTrading ? "text-[13px] pr-6" : "text-[15px]"
+                isActive ? "text-[13px] pr-6" : "text-[15px]"
               }`}
             >
               {event.title}
@@ -502,7 +508,7 @@ export default function EventCard({ event }: EventCardProps) {
 
         {/* Right Side: Meter or Close Button */}
         <div className="relative shrink-0 flex flex-col items-end gap-1">
-          {isInlineTrading && (
+          {isActive && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -525,7 +531,7 @@ export default function EventCard({ event }: EventCardProps) {
               </svg>
             </button>
           )}
-          {showMeter && !isInlineTrading && (
+          {showMeter && !isActive && (
             <div className="relative">
               <CircularProgress value={displayValue} />
             </div>
@@ -538,7 +544,7 @@ export default function EventCard({ event }: EventCardProps) {
         {selectedMarket && (
           <div
             className={`absolute bottom-0 left-0 right-0 bg-[#2A3F54] pt-2 px-0 pb-0 z-20 transition-transform duration-500 ${
-              isInlineTrading
+              isActive
                 ? "translate-y-0 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
                 : "translate-y-full ease-in-out"
             }`}
@@ -552,7 +558,7 @@ export default function EventCard({ event }: EventCardProps) {
         )}
 
         {/* Normal Content - always rendered but covered by InlineTrade when active */}
-        <div className={`${isInlineTrading ? "invisible" : ""}`}>
+        <div className={`${isActive ? "invisible" : ""}`}>
           {variant === "binary" && (
             <BinaryContent
               onTrade={(outcome) => handleTrade(marketsToDisplay[0], outcome)}
@@ -572,7 +578,7 @@ export default function EventCard({ event }: EventCardProps) {
       </div>
 
       {/* Footer (Hidden when trading) */}
-      {!isInlineTrading && (
+      {!isActive && (
         <div className="pt-2.5 flex items-center justify-between text-xs text-gray-400 relative z-10">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1 font-medium text-gray-300">

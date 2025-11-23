@@ -32,6 +32,7 @@ export default function EventsGrid({
   const [tags, setTags] = useState<Tag[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
+  const [activeTradingCardId, setActiveTradingCardId] = useState<string | null>(null);
   const observer = useRef<IntersectionObserver | null>(null);
   const ITEMS_PER_PAGE = 100;
 
@@ -311,11 +312,24 @@ export default function EventsGrid({
             // Last element - attach ref for intersection observer
             return (
               <div key={event.id} ref={lastEventElementRef}>
-                <EventCard event={event} />
+                <EventCard 
+                  event={event} 
+                  isActive={activeTradingCardId === event.id}
+                  onActivate={() => setActiveTradingCardId(event.id)}
+                  onDeactivate={() => setActiveTradingCardId(null)}
+                />
               </div>
             );
           } else {
-            return <EventCard key={event.id} event={event} />;
+            return (
+              <EventCard 
+                key={event.id} 
+                event={event}
+                isActive={activeTradingCardId === event.id}
+                onActivate={() => setActiveTradingCardId(event.id)}
+                onDeactivate={() => setActiveTradingCardId(null)}
+              />
+            );
           }
         })}
       </div>
