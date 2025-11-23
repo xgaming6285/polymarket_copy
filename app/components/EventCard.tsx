@@ -3,6 +3,7 @@
 import { Event, Market } from "../lib/polymarket";
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import TradeModal from "./TradeModal";
 
 // --- Helper Functions ---
 
@@ -169,9 +170,11 @@ const CircularProgress = ({
 const GroupedBinaryRow = ({
   label,
   yesPrice,
+  onTrade,
 }: {
   label: string;
   yesPrice: number;
+  onTrade: (outcome: "Yes" | "No") => void;
 }) => {
   const [hover, setHover] = useState<"yes" | "no" | null>(null);
 
@@ -186,6 +189,10 @@ const GroupedBinaryRow = ({
           <button
             onMouseEnter={() => setHover("yes")}
             onMouseLeave={() => setHover(null)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onTrade("Yes");
+            }}
             className={`w-11 h-7 flex items-center justify-center bg-[#0E4F43]/40 hover:bg-[#0E4F43]/60 rounded text-xs font-bold transition-colors ${
               hover === "yes" ? "text-white" : "text-[#00C08B]"
             }`}
@@ -195,6 +202,10 @@ const GroupedBinaryRow = ({
           <button
             onMouseEnter={() => setHover("no")}
             onMouseLeave={() => setHover(null)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onTrade("No");
+            }}
             className={`w-11 h-7 flex items-center justify-center bg-[#4F181E]/40 hover:bg-[#4F181E]/60 rounded text-xs font-bold transition-colors ${
               hover === "no" ? "text-white" : "text-[#E65050]"
             }`}
@@ -207,16 +218,32 @@ const GroupedBinaryRow = ({
   );
 };
 
-const BinaryContent = () => {
+const BinaryContent = ({
+  onTrade,
+}: {
+  onTrade: (outcome: "Yes" | "No") => void;
+}) => {
   // Binary content just shows buttons, prices are in the gauge
   return (
     <div className="mt-auto">
       {/* Buttons */}
       <div className="grid grid-cols-2 gap-2 mt-4">
-        <button className="bg-[#0E4F43]/40 hover:bg-[#0E4F43]/60 text-[#00C08B] py-2 rounded text-base font-bold transition-colors">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onTrade("Yes");
+          }}
+          className="bg-[#0E4F43]/40 hover:bg-[#0E4F43]/60 text-[#00C08B] py-2 rounded text-base font-bold transition-colors"
+        >
           Yes
         </button>
-        <button className="bg-[#4F181E]/40 hover:bg-[#4F181E]/60 text-[#E65050] py-2 rounded text-base font-bold transition-colors">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onTrade("No");
+          }}
+          className="bg-[#4F181E]/40 hover:bg-[#4F181E]/60 text-[#E65050] py-2 rounded text-base font-bold transition-colors"
+        >
           No
         </button>
       </div>
@@ -302,7 +329,13 @@ const MultipleChoiceContent = ({ market }: { market: Market }) => {
   );
 };
 
-const GroupedContent = ({ markets }: { markets: Market[] }) => {
+const GroupedContent = ({
+  markets,
+  onTrade,
+}: {
+  markets: Market[];
+  onTrade: (market: Market, outcome: "Yes" | "No") => void;
+}) => {
   return (
     <div className="mt-auto flex flex-col gap-2 overflow-y-auto max-h-[72px] pr-0 scrollbar-hide translate-y-1">
       {markets.map((market, idx) => {
@@ -327,6 +360,7 @@ const GroupedContent = ({ markets }: { markets: Market[] }) => {
               key={market.condition_id || idx}
               label={displayLabel}
               yesPrice={yesPrice}
+              onTrade={(outcome) => onTrade(market, outcome)}
             />
           );
         } else {
@@ -357,6 +391,11 @@ interface EventCardProps {
 
 export default function EventCard({ event }: EventCardProps) {
   const [imageError, setImageError] = useState(false);
+  const [tradeModalOpen, setTradeModalOpen] = useState(false);
+  const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
+  const [selectedOutcome, setSelectedOutcome] = useState<"Yes" | "No" | string>(
+    "Yes"
+  );
 
   const validMarkets = useMemo(() => {
     const active = (event.markets || []).filter(
@@ -424,75 +463,100 @@ export default function EventCard({ event }: EventCardProps) {
     showMeter = true;
   }
 
-  return (
-    <div className="bg-[#2A3F54] rounded-lg p-4 hover:bg-[#324858] transition-all duration-200 cursor-pointer h-full flex flex-col border border-transparent hover:border-gray-700 shadow-lg relative overflow-hidden group">
-      {/* Top Section: Flex Container for Icon/Title and Meter */}
-      <div className="flex items-start justify-between mb-2.5 relative z-10">
-        {/* Left Side: Icon & Title */}
-        <div className="flex items-start gap-3 flex-1 min-w-0 pr-2">
-          {(event.icon || event.image) && !imageError && (
-            <div className="w-10 h-10 rounded overflow-hidden shrink-0 bg-[#1D2B3A] ring-2 ring-[#1D2B3A] group-hover:ring-gray-600 transition-all relative">
-              <Image
-                src={(event.icon || event.image) as string}
-                alt={event.title}
-                fill
-                className="object-cover"
-                onError={() => setImageError(true)}
-                unoptimized
-              />
-            </div>
-          )}
+  const handleTrade = (market: Market, outcome: "Yes" | "No" | string) => {
+    setSelectedMarket(market);
+    setSelectedOutcome(outcome);
+    setTradeModalOpen(true);
+  };
 
-          <div className="flex-1 min-w-0 flex flex-col justify-center min-h-[32px]">
-            {/* Badges */}
-            {event.new && (
-              <div className="flex items-center gap-2 mb-1">
-                <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                  New
-                </span>
+  return (
+    <>
+      <div className="bg-[#2A3F54] rounded-lg p-4 hover:bg-[#324858] transition-all duration-200 cursor-pointer h-full flex flex-col border border-transparent hover:border-gray-700 shadow-lg relative overflow-hidden group">
+        {/* Top Section: Flex Container for Icon/Title and Meter */}
+        <div className="flex items-start justify-between mb-2.5 relative z-10">
+          {/* Left Side: Icon & Title */}
+          <div className="flex items-start gap-3 flex-1 min-w-0 pr-2">
+            {(event.icon || event.image) && !imageError && (
+              <div className="w-10 h-10 rounded overflow-hidden shrink-0 bg-[#1D2B3A] ring-2 ring-[#1D2B3A] group-hover:ring-gray-600 transition-all relative">
+                <Image
+                  src={(event.icon || event.image) as string}
+                  alt={event.title}
+                  fill
+                  className="object-cover"
+                  onError={() => setImageError(true)}
+                  unoptimized
+                />
               </div>
             )}
 
-            <h3 className="text-white font-bold text-[15px] leading-tight line-clamp-2 group-hover:text-blue-200 transition-colors">
-              {event.title}
-            </h3>
+            <div className="flex-1 min-w-0 flex flex-col justify-center min-h-[32px]">
+              {/* Badges */}
+              {event.new && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                    New
+                  </span>
+                </div>
+              )}
+
+              <h3 className="text-white font-bold text-[15px] leading-tight line-clamp-2 group-hover:text-blue-200 transition-colors">
+                {event.title}
+              </h3>
+            </div>
+          </div>
+
+          {/* Right Side: Meter (Only for Binary) */}
+          {showMeter && (
+            <div className="relative shrink-0">
+              <CircularProgress value={displayValue} />
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="grow flex flex-col justify-end mb-2.5 relative z-10 min-h-[24px]">
+          {variant === "binary" && (
+            <BinaryContent
+              onTrade={(outcome) => handleTrade(marketsToDisplay[0], outcome)}
+            />
+          )}
+          {variant === "versus" && (
+            <VersusContent market={marketsToDisplay[0]} />
+          )}
+          {variant === "multiple_choice" && (
+            <MultipleChoiceContent market={marketsToDisplay[0]} />
+          )}
+          {variant === "grouped" && (
+            <GroupedContent markets={validMarkets} onTrade={handleTrade} />
+          )}
+          {variant === "unknown" && <div className="h-4" />}
+        </div>
+
+        {/* Footer */}
+        <div className="pt-2.5 flex items-center justify-between text-xs text-gray-400 relative z-10">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1 font-medium text-gray-300">
+              {formatVolume(event.volume)}{" "}
+              <span className="text-gray-500 font-normal">Vol.</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span>{formatDate(event.end_date_iso)}</span>
           </div>
         </div>
 
-        {/* Right Side: Meter (Only for Binary) */}
-        {showMeter && (
-          <div className="relative shrink-0">
-            <CircularProgress value={displayValue} />
-          </div>
-        )}
+        {/* Hover Gradient */}
+        <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       </div>
 
-      {/* Content */}
-      <div className="grow flex flex-col justify-end mb-2.5 relative z-10 min-h-[24px]">
-        {variant === "binary" && <BinaryContent />}
-        {variant === "versus" && <VersusContent market={marketsToDisplay[0]} />}
-        {variant === "multiple_choice" && (
-          <MultipleChoiceContent market={marketsToDisplay[0]} />
-        )}
-        {variant === "grouped" && <GroupedContent markets={validMarkets} />}
-        {variant === "unknown" && <div className="h-4" />}
-      </div>
-
-      {/* Footer */}
-      <div className="pt-2.5 flex items-center justify-between text-xs text-gray-400 relative z-10">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1 font-medium text-gray-300">
-            {formatVolume(event.volume)}{" "}
-            <span className="text-gray-500 font-normal">Vol.</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span>{formatDate(event.end_date_iso)}</span>
-        </div>
-      </div>
-
-      {/* Hover Gradient */}
-      <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-    </div>
+      {selectedMarket && (
+        <TradeModal
+          isOpen={tradeModalOpen}
+          onClose={() => setTradeModalOpen(false)}
+          market={selectedMarket}
+          outcome={selectedOutcome}
+        />
+      )}
+    </>
   );
 }

@@ -40,6 +40,7 @@ export interface Market {
   neg_risk?: boolean;
   neg_risk_market_id?: string;
   neg_risk_request_id?: string;
+  clobTokenIds?: string[] | string; // Added for CLOB integration
   outcomes?: string[];
   outcomePrices?: string[] | string; // Can be JSON string or array
   accepting_orders?: boolean;
