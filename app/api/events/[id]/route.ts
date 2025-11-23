@@ -4,8 +4,9 @@ const GAMMA_API_BASE = "https://gamma-api.polymarket.com";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   try {
     const url = `${GAMMA_API_BASE}/events/${params.id}`;
     
