@@ -296,12 +296,12 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
 
       {/* Sorting and Options - Only visible when filter button is clicked */}
       {filtersVisible && (
-        <div className="flex items-center gap-6 px-[6%] py-3 border-t border-[#2A3F54]">
+        <div className="flex items-center gap-2 px-[6%] py-3 border-t border-[#2A3F54]">
           {/* Sort By */}
           <div className="relative">
             <button
               onClick={() => setSortOpen(!sortOpen)}
-              className="flex items-center gap-2 text-white hover:text-gray-300"
+              className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
             >
               <span className="text-sm text-gray-400">Sort by:</span>
               <span className="text-sm font-medium">{sortBy}</span>
@@ -467,7 +467,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
           <div className="relative">
             <button
               onClick={() => setFrequencyOpen(!frequencyOpen)}
-              className="flex items-center gap-2 text-white hover:text-gray-300"
+              className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
             >
               <span className="text-sm text-gray-400">Frequency:</span>
               <span className="text-sm font-medium">{frequency}</span>
@@ -531,7 +531,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
           <div className="relative">
             <button
               onClick={() => setStatusOpen(!statusOpen)}
-              className="flex items-center gap-2 text-white hover:text-gray-300"
+              className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
             >
               <span className="text-sm text-gray-400">Status:</span>
               <span className="text-sm font-medium">{status}</span>
@@ -573,33 +573,33 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
           </div>
 
           {/* Checkboxes */}
-          <div className="flex items-center gap-4 ml-auto">
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors">
+              <span>Hide sports?</span>
               <input
                 type="checkbox"
                 checked={hideSports}
                 onChange={(e) => setHideSports(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-600 bg-[#3D5266] text-blue-500 focus:ring-blue-500"
+                className="appearance-none w-4 h-4 rounded-sm border border-gray-500 bg-transparent checked:bg-blue-500 checked:border-blue-500 focus:outline-none focus:ring-0 focus:ring-offset-0 bg-center bg-no-repeat checked:bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')]"
               />
-              <span>Hide sports?</span>
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors">
+              <span>Hide crypto?</span>
               <input
                 type="checkbox"
                 checked={hideCrypto}
                 onChange={(e) => setHideCrypto(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-600 bg-[#3D5266] text-blue-500 focus:ring-blue-500"
+                className="appearance-none w-4 h-4 rounded-sm border border-gray-500 bg-transparent checked:bg-blue-500 checked:border-blue-500 focus:outline-none focus:ring-0 focus:ring-offset-0 bg-center bg-no-repeat checked:bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')]"
               />
-              <span>Hide crypto?</span>
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors">
+              <span>Hide earnings?</span>
               <input
                 type="checkbox"
                 checked={hideEarnings}
                 onChange={(e) => setHideEarnings(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-600 bg-[#3D5266] text-blue-500 focus:ring-blue-500"
+                className="appearance-none w-4 h-4 rounded-sm border border-gray-500 bg-transparent checked:bg-blue-500 checked:border-blue-500 focus:outline-none focus:ring-0 focus:ring-offset-0 bg-center bg-no-repeat checked:bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')]"
               />
-              <span>Hide earnings?</span>
             </label>
           </div>
         </div>
