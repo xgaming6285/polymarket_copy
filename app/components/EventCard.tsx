@@ -3,7 +3,7 @@
 import { Event, Market } from "../lib/polymarket";
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import TradeModal from "./TradeModal";
+import InlineTrade from "./InlineTrade";
 
 // --- Helper Functions ---
 
@@ -11,7 +11,6 @@ const formatPercentage = (value: number): string => {
   const percentage = value * 100;
   if (percentage < 1) return "<1%";
   if (percentage > 99 && percentage < 100) return ">99%";
-  // Handle 0 specifically if needed, though Math.round(0) is 0
   return `${Math.round(percentage)}%`;
 };
 
@@ -88,12 +87,8 @@ const CircularProgress = ({
   label?: string;
 }) => {
   const radius = 29;
-  // Angles in degrees (Standard SVG: 0 is Right, 90 is Down)
-  // Start at 170 (Left-Bottom)
-  // End at 10 (Right-Bottom, equivalent to 370)
   const startAngle = 170;
 
-  // Calculate arc path
   const polarToCartesian = (
     centerX: number,
     centerY: number,
@@ -107,9 +102,6 @@ const CircularProgress = ({
     };
   };
 
-  // Map percentage to angle
-  // 0% -> 170
-  // 100% -> 370
   const totalSpan = 200;
   const progressAngle = 170 + value * totalSpan;
 
@@ -130,7 +122,6 @@ const CircularProgress = ({
           viewBox="-29 -29 58 34"
           style={{ overflow: "visible" }}
         >
-          {/* Background Track */}
           <path
             d={createPath(370)}
             fill="none"
@@ -138,7 +129,6 @@ const CircularProgress = ({
             strokeWidth="4.5"
             strokeLinecap="round"
           />
-          {/* Progress Track */}
           <path
             d={createPath(progressAngle)}
             fill="none"
@@ -223,10 +213,8 @@ const BinaryContent = ({
 }: {
   onTrade: (outcome: "Yes" | "No") => void;
 }) => {
-  // Binary content just shows buttons, prices are in the gauge
   return (
     <div className="mt-auto">
-      {/* Buttons */}
       <div className="grid grid-cols-2 gap-2 mt-4">
         <button
           onClick={(e) => {
@@ -261,27 +249,22 @@ const VersusContent = ({ market }: { market: Market }) => {
 
   return (
     <div className="mt-auto space-y-3">
-      {/* Team 1 */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-gray-300 truncate pr-2">{outcome1}</span>
         <span className="text-[#00C08B] font-medium">
           {formatPercentage(price1)}
         </span>
       </div>
-      {/* Team 2 */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-gray-300 truncate pr-2">{outcome2}</span>
         <span className="text-[#E65050] font-medium">
           {formatPercentage(price2)}
         </span>
       </div>
-
-      {/* Bar */}
       <div className="flex w-full h-1.5 rounded-full overflow-hidden bg-[#1D2B3A]">
         <div className="bg-[#00C08B]" style={{ width: `${price1 * 100}%` }} />
         <div className="bg-[#E65050]" style={{ width: `${price2 * 100}%` }} />
       </div>
-
       <div className="grid grid-cols-2 gap-2">
         <button className="bg-[#1D2B3A] hover:bg-[#2C3F52] text-blue-400 py-1.5 rounded text-xs font-medium transition-colors truncate">
           {outcome1}
@@ -298,11 +281,10 @@ const MultipleChoiceContent = ({ market }: { market: Market }) => {
   const prices = getPrices(market);
   const outcomes = getOutcomes(market);
 
-  // Sort by probability descending
   const sortedIndices = outcomes
     .map((_, i) => i)
     .sort((a, b) => (prices[b] || 0) - (prices[a] || 0))
-    .slice(0, 3); // Top 3 outcomes
+    .slice(0, 3);
 
   return (
     <div className="mt-auto space-y-2">
@@ -340,7 +322,6 @@ const GroupedContent = ({
     <div className="mt-auto flex flex-col gap-2 overflow-y-auto max-h-[72px] pr-0 scrollbar-hide translate-y-1">
       {markets.map((market, idx) => {
         const prices = getPrices(market);
-        // Check if binary (case insensitive)
         const outcomes = getOutcomes(market);
         const yesIndex = outcomes.findIndex((o) => o.toLowerCase() === "yes");
         const noIndex = outcomes.findIndex((o) => o.toLowerCase() === "no");
@@ -348,8 +329,6 @@ const GroupedContent = ({
 
         let displayLabel =
           market.groupItemTitle || market.question || `Item ${idx + 1}`;
-        // Clean up label if it repeats the event title or similar?
-        // Often groupItemTitle is good.
         if (displayLabel.length > 25)
           displayLabel = displayLabel.substring(0, 25) + "...";
 
@@ -364,7 +343,6 @@ const GroupedContent = ({
             />
           );
         } else {
-          // Categorical sub-market
           const maxPrice = Math.max(...prices);
           return (
             <div
@@ -391,7 +369,7 @@ interface EventCardProps {
 
 export default function EventCard({ event }: EventCardProps) {
   const [imageError, setImageError] = useState(false);
-  const [tradeModalOpen, setTradeModalOpen] = useState(false);
+  const [isInlineTrading, setIsInlineTrading] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [selectedOutcome, setSelectedOutcome] = useState<"Yes" | "No" | string>(
     "Yes"
@@ -402,7 +380,6 @@ export default function EventCard({ event }: EventCardProps) {
       (m) => (m.active || (m.volume && parseFloat(m.volume) > 0)) && !m.closed
     );
 
-    // Sort by price descending
     return active.sort((a, b) => {
       const pricesA = getPrices(a);
       const outcomesA = getOutcomes(a);
@@ -421,7 +398,6 @@ export default function EventCard({ event }: EventCardProps) {
   }, [event.markets]);
 
   const { variant, marketsToDisplay } = useMemo(() => {
-    // Grouped Variant: Multiple markets (e.g. Sports Dailies, Series)
     if (validMarkets.length > 1) {
       return {
         variant: "grouped" as const,
@@ -429,7 +405,6 @@ export default function EventCard({ event }: EventCardProps) {
       };
     }
 
-    // Single Market Variants
     const market = validMarkets[0];
     if (!market) return { variant: "unknown" as const, marketsToDisplay: [] };
 
@@ -466,55 +441,118 @@ export default function EventCard({ event }: EventCardProps) {
   const handleTrade = (market: Market, outcome: "Yes" | "No" | string) => {
     setSelectedMarket(market);
     setSelectedOutcome(outcome);
-    setTradeModalOpen(true);
+    setIsInlineTrading(true);
+  };
+
+  const handleCloseTrade = () => {
+    setIsInlineTrading(false);
   };
 
   return (
-    <>
-      <div className="bg-[#2A3F54] rounded-lg p-4 hover:bg-[#324858] transition-all duration-200 cursor-pointer h-full flex flex-col border border-transparent hover:border-gray-700 shadow-lg relative overflow-hidden group">
-        {/* Top Section: Flex Container for Icon/Title and Meter */}
-        <div className="flex items-start justify-between mb-2.5 relative z-10">
-          {/* Left Side: Icon & Title */}
-          <div className="flex items-start gap-3 flex-1 min-w-0 pr-2">
-            {(event.icon || event.image) && !imageError && (
-              <div className="w-10 h-10 rounded overflow-hidden shrink-0 bg-[#1D2B3A] ring-2 ring-[#1D2B3A] group-hover:ring-gray-600 transition-all relative">
-                <Image
-                  src={(event.icon || event.image) as string}
-                  alt={event.title}
-                  fill
-                  className="object-cover"
-                  onError={() => setImageError(true)}
-                  unoptimized
-                />
+    <div
+      className={`bg-[#2A3F54] rounded-lg p-4 hover:bg-[#324858] transition-all duration-200 cursor-pointer h-full flex flex-col border border-transparent hover:border-gray-700 shadow-lg relative overflow-hidden group ${
+        isInlineTrading ? "h-full" : ""
+      }`}
+    >
+      {/* Top Section */}
+      <div className="flex items-start justify-between mb-2.5 relative z-10">
+        {/* Left Side */}
+        <div className="flex items-start gap-3 flex-1 min-w-0 pr-2">
+          {(event.icon || event.image) && !imageError && (
+            <div
+              className={`rounded overflow-hidden shrink-0 bg-[#1D2B3A] ring-2 ring-[#1D2B3A] group-hover:ring-gray-600 transition-all duration-300 ease-in-out ${
+                isInlineTrading
+                  ? "w-6 h-6 absolute -top-2 -left-1 z-20"
+                  : "w-10 h-10 relative"
+              }`}
+            >
+              <Image
+                src={(event.icon || event.image) as string}
+                alt={event.title}
+                fill
+                className="object-cover"
+                onError={() => setImageError(true)}
+                unoptimized
+              />
+            </div>
+          )}
+
+          <div
+            className={`flex-1 min-w-0 flex flex-col justify-center transition-all duration-300 ${
+              isInlineTrading ? "pl-8 -mt-1.5 min-h-[20px]" : "min-h-[32px]"
+            }`}
+          >
+            {event.new && !isInlineTrading && (
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                  New
+                </span>
               </div>
             )}
 
-            <div className="flex-1 min-w-0 flex flex-col justify-center min-h-[32px]">
-              {/* Badges */}
-              {event.new && (
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-blue-500/20 text-blue-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                    New
-                  </span>
-                </div>
-              )}
-
-              <h3 className="text-white font-bold text-[15px] leading-tight line-clamp-2 group-hover:text-blue-200 transition-colors">
-                {event.title}
-              </h3>
-            </div>
+            <h3
+              className={`text-white font-bold leading-tight line-clamp-2 group-hover:text-blue-200 transition-all duration-300 ${
+                isInlineTrading ? "text-[13px] pr-6" : "text-[15px]"
+              }`}
+            >
+              {event.title}
+            </h3>
           </div>
+        </div>
 
-          {/* Right Side: Meter (Only for Binary) */}
-          {showMeter && (
-            <div className="relative shrink-0">
+        {/* Right Side: Meter or Close Button */}
+        <div className="relative shrink-0 flex flex-col items-end gap-1">
+          {isInlineTrading && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCloseTrade();
+              }}
+              className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors absolute -top-2 -right-2 z-50"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+          {showMeter && !isInlineTrading && (
+            <div className="relative">
               <CircularProgress value={displayValue} />
             </div>
           )}
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="grow flex flex-col justify-end mb-2.5 relative z-10 min-h-[24px]">
+      {/* Content */}
+      <div className="grow flex flex-col justify-end mb-2.5 relative z-10 min-h-[24px] overflow-hidden">
+        {selectedMarket && (
+          <div
+            className={`absolute bottom-0 left-0 right-0 bg-[#2A3F54] pt-2 px-0 pb-0 z-20 transition-transform duration-500 ${
+              isInlineTrading
+                ? "translate-y-0 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+                : "translate-y-full ease-in-out"
+            }`}
+          >
+            <InlineTrade
+              market={selectedMarket}
+              outcome={selectedOutcome}
+              onClose={handleCloseTrade}
+            />
+          </div>
+        )}
+
+        {/* Normal Content - always rendered but covered by InlineTrade when active */}
+        <div className={`${isInlineTrading ? "invisible" : ""}`}>
           {variant === "binary" && (
             <BinaryContent
               onTrade={(outcome) => handleTrade(marketsToDisplay[0], outcome)}
@@ -531,8 +569,10 @@ export default function EventCard({ event }: EventCardProps) {
           )}
           {variant === "unknown" && <div className="h-4" />}
         </div>
+      </div>
 
-        {/* Footer */}
+      {/* Footer (Hidden when trading) */}
+      {!isInlineTrading && (
         <div className="pt-2.5 flex items-center justify-between text-xs text-gray-400 relative z-10">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1 font-medium text-gray-300">
@@ -544,19 +584,10 @@ export default function EventCard({ event }: EventCardProps) {
             <span>{formatDate(event.end_date_iso)}</span>
           </div>
         </div>
-
-        {/* Hover Gradient */}
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-      </div>
-
-      {selectedMarket && (
-        <TradeModal
-          isOpen={tradeModalOpen}
-          onClose={() => setTradeModalOpen(false)}
-          market={selectedMarket}
-          outcome={selectedOutcome}
-        />
       )}
-    </>
+
+      {/* Hover Gradient */}
+      <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+    </div>
   );
 }

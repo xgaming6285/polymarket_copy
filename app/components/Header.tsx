@@ -242,7 +242,7 @@ export default function Header() {
           >
             {/* Trending - Special First Item */}
             <a
-              href="#"
+              href="/"
               className="flex items-center gap-2 text-white hover:text-gray-300 whitespace-nowrap pointer-events-auto"
             >
               <svg
