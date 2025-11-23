@@ -75,12 +75,12 @@ export default function BreakingPage() {
         <Header />
       </div>
 
-      <main className="flex-1 flex flex-col w-full px-[6%] py-8 overflow-hidden min-h-0">
+      <main className="flex-1 flex flex-col w-full px-[6%] pb-8 pt-0 overflow-hidden min-h-0">
         <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}
-          <div className="lg:col-span-2 flex flex-col h-full min-h-0">
+          <div className="lg:col-span-2 h-full min-h-0 overflow-y-auto pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             {/* Banner Section */}
-            <div className="shrink-0 mb-6 gap-5 flex flex-col">
+            <div className="mb-6 gap-5 flex flex-col mt-8">
               <div className="w-full rounded-2xl max-[730px]:h-32 overflow-hidden bg-[#1f3f56] h-[168px] flex items-center justify-start px-6 min-[730px]:px-10 relative border border-[#2A3F54]">
                 <div className="flex flex-col gap-1 items-start">
                   <p className="text-gray-400 text-[15px] font-medium relative z-10">
@@ -340,7 +340,7 @@ export default function BreakingPage() {
             </div>
 
             {/* Category Filters */}
-            <div className="shrink-0 flex items-center gap-2 overflow-x-auto pb-4 mb-1 scrollbar-hide px-6 min-[730px]:px-10">
+            <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-1 scrollbar-hide px-6 min-[730px]:px-10">
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
@@ -357,7 +357,7 @@ export default function BreakingPage() {
             </div>
 
             {/* Market List */}
-            <div className="flex-1 overflow-y-auto min-h-0 pr-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+            <div className="">
               <div className="space-y-2">
                 {loading ? (
                   // Skeleton loading
@@ -387,7 +387,7 @@ export default function BreakingPage() {
           {/* Sidebar - Right Column */}
           <div className="flex flex-col h-full min-h-0 space-y-6">
             {/* Get Updates Widget */}
-            <div className="shrink-0 bg-transparent rounded-xl p-6 border border-[#2A3F54]">
+            <div className="shrink-0 bg-transparent rounded-xl p-6 border border-[#2A3F54] mt-8">
               <div className="flex items-start gap-4 mb-4">
                 <div className="p-2 bg-[#2A3F54] rounded-lg">
                   <svg
