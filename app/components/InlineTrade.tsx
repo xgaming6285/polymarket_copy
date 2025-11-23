@@ -179,9 +179,9 @@ export default function InlineTrade({ market, outcome }: InlineTradeProps) {
       : "bg-[#E65050] hover:bg-[#FF5A5A] shadow-[#E65050]/20";
 
   return (
-    <div className="mt-auto flex flex-col animate-in fade-in duration-200">
+    <div className="flex flex-col">
       {/* Input Row */}
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 mb-2">
         <div className="flex-1 flex items-center bg-[#1D2B3A] rounded-md overflow-hidden">
           <div className="relative flex-1">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
@@ -238,7 +238,7 @@ export default function InlineTrade({ market, outcome }: InlineTradeProps) {
       {/* Buy Button */}
       <button
         onClick={(e) => e.stopPropagation()}
-        className={`w-full py-2.5 mt-2 rounded-md font-bold text-base shadow-lg transition-all transform active:scale-[0.98] text-white flex flex-col items-center justify-center leading-tight ${outcomeColor}`}
+        className={`w-full py-2 rounded-md font-bold text-base shadow-lg transition-all transform active:scale-[0.98] text-white flex flex-col items-center justify-center leading-tight ${outcomeColor}`}
       >
         <span>Buy {outcome}</span>
         <span className="text-[10px] font-normal opacity-90">

@@ -370,7 +370,12 @@ interface EventCardProps {
   onDeactivate?: () => void;
 }
 
-export default function EventCard({ event, isActive = false, onActivate, onDeactivate }: EventCardProps) {
+export default function EventCard({
+  event,
+  isActive = false,
+  onActivate,
+  onDeactivate,
+}: EventCardProps) {
   const [imageError, setImageError] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null);
   const [selectedOutcome, setSelectedOutcome] = useState<"Yes" | "No" | string>(
@@ -540,15 +545,10 @@ export default function EventCard({ event, isActive = false, onActivate, onDeact
       </div>
 
       {/* Content */}
-      <div className="grow flex flex-col justify-end mb-2.5 relative z-10 min-h-[24px] overflow-hidden">
-        {selectedMarket && (
-          <div
-            className={`absolute bottom-0 left-0 right-0 bg-[#2A3F54] pt-2 px-0 pb-0 z-20 transition-transform duration-500 ${
-              isActive
-                ? "translate-y-0 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
-                : "translate-y-full ease-in-out"
-            }`}
-          >
+      <div className="grow flex flex-col justify-end mb-2.5 relative z-10 min-h-[100px] overflow-hidden">
+        {/* Trade Interface - slides up when active */}
+        {selectedMarket && isActive && (
+          <div className="absolute inset-0 flex flex-col justify-end bg-[#2A3F54] animate-in fade-in slide-in-from-bottom-4 duration-300">
             <InlineTrade
               market={selectedMarket}
               outcome={selectedOutcome}
@@ -557,7 +557,7 @@ export default function EventCard({ event, isActive = false, onActivate, onDeact
           </div>
         )}
 
-        {/* Normal Content - always rendered but covered by InlineTrade when active */}
+        {/* Normal Content - hidden when trading */}
         <div className={`${isActive ? "invisible" : ""}`}>
           {variant === "binary" && (
             <BinaryContent
