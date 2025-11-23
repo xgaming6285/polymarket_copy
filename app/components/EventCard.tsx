@@ -166,6 +166,47 @@ const CircularProgress = ({
   );
 };
 
+const GroupedBinaryRow = ({
+  label,
+  yesPrice,
+}: {
+  label: string;
+  yesPrice: number;
+}) => {
+  const [hover, setHover] = useState<"yes" | "no" | null>(null);
+
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-gray-300 truncate flex-1 mr-2">{label}</span>
+      <div className="flex items-center gap-2 shrink-0">
+        <span className="text-white font-bold text-base">
+          {formatPercentage(yesPrice)}
+        </span>
+        <div className="flex gap-1">
+          <button
+            onMouseEnter={() => setHover("yes")}
+            onMouseLeave={() => setHover(null)}
+            className={`w-11 h-7 flex items-center justify-center bg-[#0E4F43]/40 hover:bg-[#0E4F43]/60 rounded text-xs font-bold transition-colors ${
+              hover === "yes" ? "text-white" : "text-[#00C08B]"
+            }`}
+          >
+            {hover === "yes" ? formatPercentage(yesPrice) : "Yes"}
+          </button>
+          <button
+            onMouseEnter={() => setHover("no")}
+            onMouseLeave={() => setHover(null)}
+            className={`w-11 h-7 flex items-center justify-center bg-[#4F181E]/40 hover:bg-[#4F181E]/60 rounded text-xs font-bold transition-colors ${
+              hover === "no" ? "text-white" : "text-[#E65050]"
+            }`}
+          >
+            {hover === "no" ? formatPercentage(1 - yesPrice) : "No"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const BinaryContent = () => {
   // Binary content just shows buttons, prices are in the gauge
   return (
@@ -282,27 +323,11 @@ const GroupedContent = ({ markets }: { markets: Market[] }) => {
         if (isBinary) {
           const yesPrice = prices[yesIndex] || 0;
           return (
-            <div
+            <GroupedBinaryRow
               key={market.condition_id || idx}
-              className="flex items-center justify-between text-sm"
-            >
-              <span className="text-gray-300 truncate flex-1 mr-2">
-                {displayLabel}
-              </span>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-white font-bold text-base">
-                  {formatPercentage(yesPrice)}
-                </span>
-                <div className="flex gap-1">
-                  <div className="w-11 h-7 flex items-center justify-center bg-[#0E4F43]/40 text-[#00C08B] rounded text-xs font-bold">
-                    Yes
-                  </div>
-                  <div className="w-11 h-7 flex items-center justify-center bg-[#4F181E]/40 text-[#E65050] rounded text-xs font-bold">
-                    No
-                  </div>
-                </div>
-              </div>
-            </div>
+              label={displayLabel}
+              yesPrice={yesPrice}
+            />
           );
         } else {
           // Categorical sub-market
