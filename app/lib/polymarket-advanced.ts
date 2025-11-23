@@ -1,7 +1,7 @@
 // Advanced Polymarket API utilities
 // These functions provide additional features beyond basic event fetching
 
-import { Event, Market } from "./polymarket";
+import { Event} from "./polymarket";
 
 const GAMMA_API_BASE = "https://gamma-api.polymarket.com";
 const CLOB_API_BASE = "https://clob.polymarket.com";

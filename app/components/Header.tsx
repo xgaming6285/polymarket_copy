@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 
 export default function Header() {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -241,7 +242,7 @@ export default function Header() {
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {/* Trending - Special First Item */}
-            <a
+            <Link
               href="/"
               className="flex items-center gap-2 text-white hover:text-gray-300 whitespace-nowrap pointer-events-auto"
             >
@@ -257,7 +258,7 @@ export default function Header() {
                 <polyline points="17 6 23 6 23 12"></polyline>
               </svg>
               <span className="font-medium">Trending</span>
-            </a>
+            </Link>
             <a
               href="/breaking"
               className="text-gray-400 hover:text-gray-300 whitespace-nowrap pointer-events-auto"
