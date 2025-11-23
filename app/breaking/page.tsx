@@ -406,7 +406,7 @@ export default function BreakingPage() {
                   <h3 className="font-bold text-white">Get daily updates</h3>
                   <p className="text-sm text-gray-400 mt-1">
                     We&apos;ll send you an email every day with what&apos;s
-                    moving on Polymarket
+                    moving on SupraCast
                   </p>
                 </div>
               </div>
@@ -423,9 +423,9 @@ export default function BreakingPage() {
             {/* Live Feed Widget */}
             <div className="flex-1 flex flex-col min-h-0">
               <div className="shrink-0 flex items-center justify-between mb-3">
-                <span className="text-gray-400">Live from @polymarket</span>
+                <span className="text-gray-400">Live from @SupraCast</span>
                 <a
-                  href="https://twitter.com/polymarket"
+                  href="https://twitter.com/SupraCast"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-white text-black px-3 py-2 rounded-full text-xs font-bold hover:bg-gray-200"
@@ -443,7 +443,7 @@ export default function BreakingPage() {
                     const label = isBreaking
                       ? "Breaking news"
                       : isNewMarket
-                      ? "New polymarket"
+                      ? "New SupraCast"
                       : "Update";
                     const labelColor = isBreaking
                       ? "text-[#F05252]"

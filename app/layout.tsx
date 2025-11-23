@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Polymarket",
+  title: "SupraCast",
   description: "Prediction market platform",
 };
 

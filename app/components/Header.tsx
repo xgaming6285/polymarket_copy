@@ -96,7 +96,7 @@ export default function Header() {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-xl font-semibold">Polymarket</span>
+            <span className="text-xl font-semibold">SupraCast</span>
             <span className="text-2xl">🇺🇸</span>
           </div>
 
@@ -105,7 +105,7 @@ export default function Header() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search polymarket"
+                placeholder="Search SupraCast"
                 className="w-full bg-[#2f3f50] text-white placeholder-gray-400 rounded-lg px-4 py-2 pl-10 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <svg
