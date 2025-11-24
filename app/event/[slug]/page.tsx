@@ -5,6 +5,10 @@ import { notFound } from "next/navigation";
 import EventChartContainer from "@/app/components/EventChartContainer";
 import OrderBook from "@/app/components/OrderBook";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 interface ParsedToken {
   token_id: string;
   outcome: string;
