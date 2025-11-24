@@ -47,7 +47,7 @@ export default function EventChart({ series }: EventChartProps) {
   );
 
   const formatTime = (time: number) => {
-    return new Date(time).toLocaleDateString(undefined, {
+    return new Date(time).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
@@ -94,7 +94,7 @@ export default function EventChart({ series }: EventChartProps) {
             borderColor: "#2A3F54",
             color: "#fff",
           }}
-          labelFormatter={(label) => new Date(label).toLocaleString()}
+          labelFormatter={(label) => new Date(label).toLocaleString("en-US")}
           formatter={(value: number, name: string) => [
             `${(value * 100).toFixed(1)}%`,
             name,

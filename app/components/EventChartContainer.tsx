@@ -10,12 +10,20 @@ interface TokenInfo {
   price: number;
 }
 
+interface ChartSeries {
+  name: string;
+  data: PriceHistory[];
+  color: string;
+}
+
 interface EventChartContainerProps {
   tokens: TokenInfo[];
 }
 
-export default function EventChartContainer({ tokens }: EventChartContainerProps) {
-  const [chartSeries, setChartSeries] = useState<any[]>([]);
+export default function EventChartContainer({
+  tokens,
+}: EventChartContainerProps) {
+  const [chartSeries, setChartSeries] = useState<ChartSeries[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +37,7 @@ export default function EventChartContainer({ tokens }: EventChartContainerProps
 
       if (!isBackground) setLoading(true);
       const colors = ["#00C08B", "#2E75FF", "#FFB800", "#E63757"];
-      
+
       try {
         // Use batch endpoint to fetch all histories in a single request
         // Fetch from a very old timestamp to get "all time" history
@@ -37,26 +45,29 @@ export default function EventChartContainer({ tokens }: EventChartContainerProps
         const startTs = 1609459200;
         const fidelity = 720; // 12h intervals for long history
         const markets = tokens.map((t) => t.token_id);
-        
-        const response = await fetch('/api/history/batch', {
-          method: 'POST',
+
+        const response = await fetch("/api/history/batch", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ markets, startTs, fidelity }),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch batch history');
+          throw new Error("Failed to fetch batch history");
         }
 
         const { results } = await response.json();
-        
+
         if (!mounted) return;
 
         // Create a map for fast lookup
-        const historyMap = new Map(
-          results.map((r: { market: string; history: any[] }) => [r.market, r.history])
+        const historyMap = new Map<string, PriceHistory[]>(
+          results.map((r: { market: string; history: PriceHistory[] }) => [
+            r.market,
+            r.history,
+          ])
         );
 
         const series = tokens.map((t, index) => ({
@@ -104,4 +115,3 @@ export default function EventChartContainer({ tokens }: EventChartContainerProps
 
   return <EventChart series={chartSeries} />;
 }
-

@@ -8,7 +8,7 @@ interface OrderBookProps {
   tokenId: string;
 }
 
-export default function OrderBook({ data, tokenId }: OrderBookProps) {
+export default function OrderBook({ data }: OrderBookProps) {
   const { bids, asks } = data;
 
   // Sort asks ascending (lowest price first) and take top 5
