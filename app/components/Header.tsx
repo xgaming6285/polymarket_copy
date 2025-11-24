@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -10,7 +11,9 @@ export default function Header() {
   const [activeMoreItem, setActiveMoreItem] = useState("");
   const [scrollPosition, setScrollPosition] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { user, logout, isLoading } = useAuth();
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -174,21 +177,290 @@ export default function Header() {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
-          {/* Log In */}
-          <Link
-            href="/login"
-            className="text-blue-400 hover:text-blue-300 text-sm font-bold px-4 py-2"
-          >
-            Log In
-          </Link>
+          {!isLoading && user && user.firstName && user.lastName ? (
+            <>
+              {/* Portfolio */}
+              <div className="text-center mr-2">
+                <div className="text-gray-400 text-xs">Portfolio</div>
+                <div className="text-green-400 font-bold text-sm">$0.00</div>
+              </div>
 
-          {/* Sign Up */}
-          <Link
-            href="/signup"
-            className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold px-4 py-2 rounded-lg"
-          >
-            Sign Up
-          </Link>
+              {/* Cash */}
+              <div className="text-center mr-2">
+                <div className="text-gray-400 text-xs">Cash</div>
+                <div className="text-green-400 font-bold text-sm">$0.00</div>
+              </div>
+
+              {/* Deposit Button */}
+              <button className="bg-[#2c9cdb] hover:bg-[#3db0ef] text-white font-bold px-6 py-2 rounded-lg text-sm mr-2">
+                Deposit
+              </button>
+
+              {/* Notification Bell */}
+              <button className="text-gray-400 hover:text-white p-2">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+              </button>
+
+              {/* User Avatar Dropdown */}
+              <div className="relative ml-2">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-green-400 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {user.firstName?.charAt(0) || "U"}
+                      {user.lastName?.charAt(0) || "S"}
+                    </span>
+                  </div>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className={`text-gray-400 transition-transform ${
+                      userMenuOpen ? "rotate-180" : ""
+                    }`}
+                  >
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-[#1D2B3A] border border-[#2A3F54] rounded-lg shadow-lg py-2 z-50">
+                    {/* User Info */}
+                    <div className="px-4 py-3 border-b border-[#2A3F54]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-green-400 flex items-center justify-center">
+                          <span className="text-white font-bold">
+                            {user.firstName?.charAt(0) || "U"}
+                            {user.lastName?.charAt(0) || "S"}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="text-white font-semibold">
+                            {user.firstName || ""} {user.lastName || ""}
+                          </div>
+                          <div className="text-gray-400 text-xs flex items-center gap-1">
+                            {user.id?.substring(0, 6) || "0xef4f"}...
+                            {user.id?.substring(user.id.length - 4) || "298C"}
+                            <button className="text-gray-400 hover:text-white">
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <rect
+                                  x="9"
+                                  y="9"
+                                  width="13"
+                                  height="13"
+                                  rx="2"
+                                  ry="2"
+                                ></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Settings */}
+                    <button
+                      className="w-full text-right px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54] flex items-center justify-end gap-2"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m8.66-11.66l-4.24 4.24m-4.24 4.24L7.34 20.66M1 12h6m6 0h6m-1.34 8.66l-4.24-4.24m-4.24-4.24L7.34 3.34"></path>
+                      </svg>
+                    </button>
+
+                    {/* Menu Items */}
+                    <a
+                      href="#"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                      </svg>
+                      <span>🏆 Leaderboard</span>
+                    </a>
+                    <a
+                      href="#"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                        <rect x="2" y="7" width="20" height="5"></rect>
+                        <path d="M12 22V7"></path>
+                        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                      </svg>
+                      <span>🎁 Rewards</span>
+                    </a>
+                    <a
+                      href="#"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                      </svg>
+                      <span>📮 APIs</span>
+                    </a>
+                    <a
+                      href="#"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                      </svg>
+                      <span>🔨 Builders</span>
+                    </a>
+
+                    {/* Dark Mode Toggle */}
+                    <div className="flex items-center justify-between px-4 py-2 hover:bg-[#2A3F54]">
+                      <div className="flex items-center gap-3 text-gray-400">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <span>🌙 Dark mode</span>
+                      </div>
+                      <div className="w-12 h-6 bg-blue-500 rounded-full relative cursor-pointer">
+                        <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+
+                    <hr className="border-[#2A3F54] my-2" />
+
+                    {/* Bottom Menu Items */}
+                    <a
+                      href="#"
+                      className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                    >
+                      Accuracy
+                    </a>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                    >
+                      Watchlist
+                    </a>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                    >
+                      Documentation
+                    </a>
+                    <a
+                      href="#"
+                      className="block px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                    >
+                      Terms of Use
+                    </a>
+
+                    <hr className="border-[#2A3F54] my-2" />
+
+                    {/* Logout */}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-red-400 hover:text-red-300 hover:bg-[#2A3F54]"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Log In */}
+              <Link
+                href="/login"
+                className="text-blue-400 hover:text-blue-300 text-sm font-bold px-4 py-2"
+              >
+                Log In
+              </Link>
+
+              {/* Sign Up */}
+              <Link
+                href="/signup"
+                className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold px-4 py-2 rounded-lg"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
 
           {/* More Menu */}
           <div className="relative">

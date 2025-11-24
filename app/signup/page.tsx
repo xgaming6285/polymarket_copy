@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function SignupPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -48,8 +50,10 @@ export default function SignupPage() {
       }
 
       console.log('Sign up successful!');
-      // Redirect to home or login page on success
-      router.push('/'); // Or maybe /login if we had one
+      // Store user data
+      login(data.user);
+      // Redirect to home
+      router.push('/');
     } catch (err: any) {
       console.error('Sign up error:', err);
       setError(err.message);
@@ -160,7 +164,7 @@ export default function SignupPage() {
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-sm">
             Already have an account?{' '}
-            <Link href="#" className="text-blue-400 hover:text-blue-300">
+            <Link href="/login" className="text-blue-400 hover:text-blue-300">
               Log In
             </Link>
           </p>

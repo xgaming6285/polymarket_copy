@@ -53,7 +53,15 @@ export async function POST(req: Request) {
     console.log("API Route: User created successfully", user._id);
 
     return NextResponse.json(
-      { message: "User created successfully", userId: user._id },
+      {
+        message: "User created successfully",
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+        },
+      },
       { status: 201 }
     );
   } catch (error: unknown) {
