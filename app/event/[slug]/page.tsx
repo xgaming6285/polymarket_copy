@@ -98,6 +98,7 @@ export default async function EventPage({
         if (m.question?.startsWith("arch")) return false;
         const title = m.groupItemTitle || m.question || "";
         if (title.startsWith("Country ") && title.length === 9) return false; // Matches "Country X"
+        if (title === "Other") return false; // Filter out "Other" from main list if needed
         return true;
       })
       .flatMap((m: ApiMarket) => {
