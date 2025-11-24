@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  CartesianGrid,
+  ReferenceLine,
 } from "recharts";
 import { PriceHistory } from "../lib/polymarket-advanced";
 
@@ -64,13 +64,14 @@ export default function EventChart({ series }: EventChartProps) {
         margin={{ top: 5, right: 30, left: -60, bottom: 5 }}
       >
         {/* Horizontal dotted grid lines at 0%, 20%, 40%, 60%, 80% */}
-        <CartesianGrid
-          horizontal={true}
-          vertical={false}
-          strokeDasharray="2 4"
-          stroke="#ffffff"
-          strokeOpacity={0.3}
-        />
+        {[0, 0.2, 0.4, 0.6, 0.8].map((tick) => (
+          <ReferenceLine
+            key={tick}
+            y={tick}
+            stroke="#344452"
+            strokeDasharray="2 2"
+          />
+        ))}
         <XAxis
           dataKey="time"
           tickFormatter={formatTime}

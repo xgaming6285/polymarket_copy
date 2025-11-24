@@ -19,19 +19,23 @@ export default function EventChartContainer({ tokens }: EventChartContainerProps
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
+    let mounted = true;
+
+    async function fetchData(isBackground = false) {
       if (!tokens || tokens.length === 0) {
-        setLoading(false);
+        if (mounted) setLoading(false);
         return;
       }
 
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       const colors = ["#00C08B", "#2E75FF", "#FFB800", "#E63757"];
       
       try {
         // Use batch endpoint to fetch all histories in a single request
-        // Reduced to 7 days for faster loading
-        const startTs = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
+        // Fetch from a very old timestamp to get "all time" history
+        // Using 1609459200 (Jan 1, 2021) as a safe default for "all time"
+        const startTs = 1609459200;
+        const fidelity = 720; // 12h intervals for long history
         const markets = tokens.map((t) => t.token_id);
         
         const response = await fetch('/api/history/batch', {
@@ -39,7 +43,7 @@ export default function EventChartContainer({ tokens }: EventChartContainerProps
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ markets, startTs }),
+          body: JSON.stringify({ markets, startTs, fidelity }),
         });
 
         if (!response.ok) {
@@ -48,6 +52,8 @@ export default function EventChartContainer({ tokens }: EventChartContainerProps
 
         const { results } = await response.json();
         
+        if (!mounted) return;
+
         // Create a map for fast lookup
         const historyMap = new Map(
           results.map((r: { market: string; history: any[] }) => [r.market, r.history])
@@ -63,11 +69,21 @@ export default function EventChartContainer({ tokens }: EventChartContainerProps
       } catch (error) {
         console.error("Error fetching chart data:", error);
       } finally {
-        setLoading(false);
+        if (mounted && !isBackground) {
+          setLoading(false);
+        }
       }
     }
 
-    fetchData();
+    fetchData(false);
+
+    // Poll every 5 seconds for fresh data
+    const interval = setInterval(() => fetchData(true), 5000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, [tokens]);
 
   if (loading) {

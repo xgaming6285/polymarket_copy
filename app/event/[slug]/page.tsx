@@ -234,7 +234,7 @@ export default async function EventPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - Chart */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-transparent rounded-lg h-[480px]">
+            <div className="bg-transparent rounded-lg h-[350px]">
               <EventChartContainer tokens={tokensToChart} />
             </div>
 
