@@ -1,7 +1,15 @@
-
 "use client";
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+  CartesianGrid,
+} from "recharts";
 import { PriceHistory } from "../lib/polymarket-advanced";
 
 interface ChartSeries {
@@ -24,7 +32,7 @@ export default function EventChart({ series }: EventChartProps) {
   series.forEach((s, index) => {
     if (!s.data) return;
     const key = `series_${index}`;
-    s.data.forEach(point => {
+    s.data.forEach((point) => {
       const time = point.t * 1000; // Convert to ms
       if (!timestampMap.has(time)) {
         timestampMap.set(time, { time });
@@ -34,60 +42,75 @@ export default function EventChart({ series }: EventChartProps) {
     });
   });
 
-  const chartData = Array.from(timestampMap.values()).sort((a, b) => a.time - b.time);
+  const chartData = Array.from(timestampMap.values()).sort(
+    (a, b) => a.time - b.time
+  );
 
   const formatTime = (time: number) => {
-    return new Date(time).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return new Date(time).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const formatPrice = (price: number) => {
-    return `${(price * 100).toFixed(0)}¢`;
+    return `${(price * 100).toFixed(0)}%`;
   };
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartData}>
+      <LineChart
+        data={chartData}
+        margin={{ top: 5, right: 30, left: -60, bottom: 5 }}
+      >
         {/* Horizontal dotted grid lines at 0%, 20%, 40%, 60%, 80% */}
-        <CartesianGrid 
+        <CartesianGrid
           horizontal={true}
           vertical={false}
           strokeDasharray="2 4"
           stroke="#ffffff"
           strokeOpacity={0.3}
         />
-        <XAxis 
-            dataKey="time" 
-            tickFormatter={formatTime} 
-            stroke="#899cb2" 
-            tick={{ fontSize: 12 }}
-            minTickGap={50}
-            axisLine={{ stroke: '#899cb2' }}
+        <XAxis
+          dataKey="time"
+          tickFormatter={formatTime}
+          stroke="#899cb2"
+          tick={{ fontSize: 12 }}
+          minTickGap={50}
+          axisLine={{ stroke: "#899cb2" }}
         />
-        <YAxis 
-            tickFormatter={formatPrice} 
-            stroke="transparent"
-            tick={{ fontSize: 12 }}
-            domain={[0, 1]}
-            axisLine={false}
-            ticks={[0, 0.2, 0.4, 0.6, 0.8]}
+        <YAxis
+          tickFormatter={formatPrice}
+          stroke="transparent"
+          tick={{ fontSize: 12 }}
+          domain={[0, 1]}
+          axisLine={false}
+          ticks={[0, 0.2, 0.4, 0.6, 0.8]}
         />
-        <Tooltip 
-            contentStyle={{ backgroundColor: '#1D2B3A', borderColor: '#2A3F54', color: '#fff' }}
-            labelFormatter={(label) => new Date(label).toLocaleString()}
-            formatter={(value: number, name: string) => [`${(value * 100).toFixed(1)}¢`, name]}
+        <Tooltip
+          contentStyle={{
+            backgroundColor: "#1D2B3A",
+            borderColor: "#2A3F54",
+            color: "#fff",
+          }}
+          labelFormatter={(label) => new Date(label).toLocaleString()}
+          formatter={(value: number, name: string) => [
+            `${(value * 100).toFixed(1)}%`,
+            name,
+          ]}
         />
         <Legend />
         {series.map((s, index) => (
-          <Line 
+          <Line
             key={s.name}
             name={s.name}
-            type="monotone" 
-            dataKey={`series_${index}`} 
-            stroke={s.color} 
-            strokeWidth={2} 
-            dot={false} 
+            type="monotone"
+            dataKey={`series_${index}`}
+            stroke={s.color}
+            strokeWidth={2}
+            dot={false}
             activeDot={{ r: 4 }}
-            connectNulls 
+            connectNulls
           />
         ))}
       </LineChart>

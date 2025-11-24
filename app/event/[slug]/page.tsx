@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import EventChartContainer from "@/app/components/EventChartContainer";
 import OrderBook from "@/app/components/OrderBook";
+import Header from "@/app/components/Header";
 import type { Event } from "@/app/lib/polymarket";
 
 // Force dynamic rendering for this page
@@ -146,39 +147,120 @@ export default async function EventPage({
   const orderBook = await orderBookPromise;
 
   return (
-    <main className="min-h-screen bg-[#0F141A] text-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <main className="min-h-screen bg-[#1d2b3a] text-white">
+      <Header />
+      <div className="px-[6%] py-8">
         {/* Header */}
-        <div className="flex items-start gap-6 mb-8">
-          {event.image && (
-            <div className="relative w-20 h-20 shrink-0">
-              <Image
-                src={event.image}
-                alt={event.title}
-                fill
-                className="object-cover rounded-lg"
-                sizes="100vw"
-              />
-            </div>
-          )}
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
-            <div className="flex items-center gap-4 text-gray-400 text-sm">
-              {event.volume && parseFloat(event.volume) > 0 && (
-                <span>${parseFloat(event.volume).toLocaleString()} Vol.</span>
-              )}
-              {event.end_date && (
-                <span>{new Date(event.end_date).toLocaleDateString()}</span>
-              )}
-            </div>
+        <div className="mb-8">
+          <div className="flex gap-3 items-start">
+            {event.image && (
+              <div className="relative w-[64px] h-[64px] shrink-0">
+                <Image
+                  src={event.image}
+                  alt={event.title}
+                  fill
+                  className="object-cover rounded-lg"
+                  sizes="100vw"
+                />
+              </div>
+            )}
+            <h1
+              className="font-bold"
+              style={{
+                fontFamily: '"Open Sauce One", sans-serif',
+                fontSize: "24px",
+                lineHeight: "1.3",
+                marginTop: "14px",
+              }}
+            >
+              {event.title}
+            </h1>
+          </div>
+          <div
+            className="flex items-center gap-1 mt-2"
+            style={{
+              color: "#899cb2",
+              fontFamily: '"Open Sauce One", sans-serif',
+              fontSize: "14px",
+            }}
+          >
+            <svg
+              height="18"
+              width="18"
+              viewBox="0 0 18 18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g fill="currentColor">
+                <path
+                  d="M9.5,12.25s0,2.938,3.75,4H4.75c3.75-1.062,3.75-4,3.75-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                ></path>
+                <path
+                  d="M5.286,9C1.469,9,1.75,3.75,1.75,3.75H3.987"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                ></path>
+                <path
+                  d="M12.714,9c3.818,0,3.536-5.25,3.536-5.25h-2.237"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                ></path>
+                <path
+                  d="M14,1.75c-.625,6.531-2.281,10.219-4.75,10.5h-.25s-.25,0-.25,0c-2.469-.281-4.125-3.969-4.75-10.5H14Z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                ></path>
+              </g>
+            </svg>
+            {event.volume && parseFloat(event.volume) > 0 && (
+              <span>${parseFloat(event.volume).toLocaleString()} Vol.</span>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - Chart */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-transparent rounded-lg p-6 h-[400px]">
+            <div className="bg-transparent rounded-lg h-[480px]">
               <EventChartContainer tokens={tokensToChart} />
+            </div>
+
+            {/* Outcomes List */}
+            <div className="flex flex-col gap-2">
+              {tokensToChart.map((token) => (
+                <div
+                  key={token.token_id}
+                  className="flex items-center justify-between p-4 rounded-lg bg-[#2C3F51] hover:bg-[#374E65] transition-colors cursor-pointer"
+                >
+                  <span className="font-medium text-white">
+                    {token.outcome}
+                  </span>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[#00C08B] font-bold">
+                      {(token.price * 100).toFixed(0)}%
+                    </span>
+                    <button className="px-4 py-1.5 rounded bg-[#00C08B] hover:bg-[#00A07D] text-white text-sm font-bold transition-colors">
+                      Buy Yes {(token.price * 100).toFixed(1)}¢
+                    </button>
+                    <button className="px-4 py-1.5 rounded bg-[#E63757] hover:bg-[#CC2946] text-white text-sm font-bold transition-colors">
+                      Buy No {(100 - token.price * 100).toFixed(1)}¢
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

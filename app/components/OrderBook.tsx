@@ -33,7 +33,7 @@ export default function OrderBook({ data, tokenId }: OrderBookProps) {
             const total = price * size;
             return (
                 <div key={`ask-${i}`} className="grid grid-cols-3 hover:bg-red-900/20 px-1 py-0.5 cursor-pointer text-[#E65050]">
-                    <div className="text-left">{price.toFixed(2)}¢</div>
+                    <div className="text-left">{(price * 100).toFixed(1)}%</div>
                     <div className="text-right text-gray-300">{size.toFixed(0)}</div>
                     <div className="text-right text-gray-400">${total.toFixed(2)}</div>
                 </div>
@@ -51,7 +51,7 @@ export default function OrderBook({ data, tokenId }: OrderBookProps) {
              const total = price * size;
              return (
                 <div key={`bid-${i}`} className="grid grid-cols-3 hover:bg-green-900/20 px-1 py-0.5 cursor-pointer text-[#00C08B]">
-                    <div className="text-left">{price.toFixed(2)}¢</div>
+                    <div className="text-left">{(price * 100).toFixed(1)}%</div>
                     <div className="text-right text-gray-300">{size.toFixed(0)}</div>
                     <div className="text-right text-gray-400">${total.toFixed(2)}</div>
                 </div>
