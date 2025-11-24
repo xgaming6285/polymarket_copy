@@ -1,13 +1,39 @@
-import { fetchEventBySlug } from "@/app/lib/polymarket";
 import { fetchOrderBook } from "@/app/lib/polymarket-advanced";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import EventChartContainer from "@/app/components/EventChartContainer";
 import OrderBook from "@/app/components/OrderBook";
+import type { Event } from "@/app/lib/polymarket";
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
+export const revalidate = 0;
+
+// Fetch directly from Gamma API to avoid internal API route issues on Vercel
+async function fetchEventBySlugDirect(slug: string): Promise<Event | null> {
+  try {
+    const url = `https://gamma-api.polymarket.com/events?slug=${slug}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch event: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data[0] || null : null;
+  } catch (error) {
+    console.error("Error fetching event by slug:", error);
+    return null;
+  }
+}
 
 interface ParsedToken {
   token_id: string;
@@ -61,7 +87,7 @@ export default async function EventPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const event = await fetchEventBySlug(slug);
+  const event = await fetchEventBySlugDirect(slug);
 
   if (!event) {
     notFound();
