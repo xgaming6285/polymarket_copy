@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import NextImage from "next/image";
 
 interface OrderBook {
@@ -28,6 +28,7 @@ export default function TradePanel({ selectedOutcome, eventImage }: TradePanelPr
   const [opposingOrderBook, setOpposingOrderBook] = useState<OrderBook | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Reset state when outcome changes
   useEffect(() => {
@@ -212,7 +213,7 @@ export default function TradePanel({ selectedOutcome, eventImage }: TradePanelPr
   };
 
   return (
-    <div className="bg-[#1A222C] rounded-lg p-4 w-full max-w-[360px] ml-auto border border-[#2C3F52]">
+    <div className="bg-transparent rounded-lg p-4 w-full max-w-[360px] ml-auto border border-[#2C3F52]">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         {eventImage && (
@@ -255,12 +256,12 @@ export default function TradePanel({ selectedOutcome, eventImage }: TradePanelPr
             onClick={() => setSide("Yes")}
             className={`flex items-center justify-between px-4 py-3 rounded-lg border transition-all ${
                 side === "Yes" 
-                ? "bg-[#0E4538] border-[#00C08B] shadow-[0_0_10px_rgba(0,192,139,0.2)]" 
-                : "bg-[#1D2B3A] border-transparent hover:bg-[#2C3F51]"
+                ? "bg-[#39a665] border-transparent" 
+                : "bg-[#354557] border-transparent"
             }`}
         >
-            <span className={`font-bold ${side === "Yes" ? "text-[#00C08B]" : "text-white"}`}>Yes</span>
-            <span className={`font-bold ${side === "Yes" ? "text-[#00C08B]" : "text-[#00C08B]"}`}>
+            <span className={`font-bold ${side === "Yes" ? "text-white" : "text-[#818a95]"}`}>Yes</span>
+            <span className={`font-bold ${side === "Yes" ? "text-white" : "text-[#818a95]"}`}>
                 {getPriceDisplay(yesPrice)}
             </span>
         </button>
@@ -269,12 +270,12 @@ export default function TradePanel({ selectedOutcome, eventImage }: TradePanelPr
             onClick={() => setSide("No")}
             className={`flex items-center justify-between px-4 py-3 rounded-lg border transition-all ${
                 side === "No" 
-                ? "bg-[#52222D] border-[#E63757] shadow-[0_0_10px_rgba(230,55,87,0.2)]" 
-                : "bg-[#1D2B3A] border-transparent hover:bg-[#2C3F51]"
+                ? "bg-[#e13737] border-transparent" 
+                : "bg-[#354557] border-transparent"
             }`}
         >
-            <span className={`font-bold ${side === "No" ? "text-[#E63757]" : "text-white"}`}>No</span>
-            <span className={`font-bold ${side === "No" ? "text-[#E63757]" : "text-[#E63757]"}`}>
+            <span className={`font-bold ${side === "No" ? "text-white" : "text-[#818a95]"}`}>No</span>
+            <span className={`font-bold ${side === "No" ? "text-white" : "text-[#818a95]"}`}>
                 {getPriceDisplay(noPrice)}
             </span>
         </button>
@@ -282,18 +283,27 @@ export default function TradePanel({ selectedOutcome, eventImage }: TradePanelPr
 
       {/* Amount Input */}
       <div className="mb-2">
-        <div className="flex justify-between mb-1 text-sm text-gray-400">
-            <span>Amount</span>
-            <span>${amount.toFixed(2)}</span>
-        </div>
-        <div className="relative bg-[#1D2B3A] rounded-lg border border-gray-700 focus-within:border-blue-500 transition-colors">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+        <div 
+            className="flex items-center justify-end bg-[#1D2B3A] rounded-lg px-4 py-4 cursor-text"
+            onClick={() => inputRef.current?.focus()}
+        >
+            <span 
+                className="text-5xl font-medium transition-colors mr-1"
+                style={{ color: amount > 0 ? "#ffffff" : "#788089" }}
+            >
+                $
+            </span>
             <input
+                ref={inputRef}
                 type="number"
                 value={amount || ""}
                 onChange={(e) => setAmount(Math.max(0, parseFloat(e.target.value) || 0))}
-                className="w-full bg-transparent text-white text-right py-4 pr-4 pl-8 outline-none font-mono text-xl font-bold"
+                className="bg-transparent text-right outline-none font-mono text-5xl font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors placeholder-[#788089]"
                 placeholder="0"
+                style={{ 
+                    width: `${Math.max(1, (amount || "").toString().length) + 0.2}ch`,
+                    color: amount > 0 ? "#ffffff" : "#788089"
+                }}
             />
         </div>
       </div>
@@ -319,11 +329,7 @@ export default function TradePanel({ selectedOutcome, eventImage }: TradePanelPr
 
       {/* Trade Button */}
       <button
-        className={`w-full py-3 rounded-lg font-bold text-lg text-white shadow-lg transition-all transform active:scale-[0.98] ${
-            side === "Yes"
-            ? "bg-[#00C08B] hover:bg-[#00E0A1]"
-            : "bg-[#E63757] hover:bg-[#FF5A5A]"
-        } ${amount === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`w-full py-3 rounded-lg font-bold text-lg text-white shadow-lg transition-all transform active:scale-[0.98] bg-[#2d9cdb] ${amount === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
         disabled={amount === 0}
       >
         Trade
