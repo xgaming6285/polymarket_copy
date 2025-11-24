@@ -1,7 +1,7 @@
 
 "use client";
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from "recharts";
 import { PriceHistory } from "../lib/polymarket-advanced";
 
 interface ChartSeries {
@@ -47,18 +47,29 @@ export default function EventChart({ series }: EventChartProps) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={chartData}>
+        {/* Horizontal dotted grid lines at 0%, 20%, 40%, 60%, 80% */}
+        <CartesianGrid 
+          horizontal={true}
+          vertical={false}
+          strokeDasharray="2 4"
+          stroke="#ffffff"
+          strokeOpacity={0.3}
+        />
         <XAxis 
             dataKey="time" 
             tickFormatter={formatTime} 
             stroke="#899cb2" 
             tick={{ fontSize: 12 }}
             minTickGap={50}
+            axisLine={{ stroke: '#899cb2' }}
         />
         <YAxis 
             tickFormatter={formatPrice} 
-            stroke="#899cb2" 
+            stroke="transparent"
             tick={{ fontSize: 12 }}
             domain={[0, 1]}
+            axisLine={false}
+            ticks={[0, 0.2, 0.4, 0.6, 0.8]}
         />
         <Tooltip 
             contentStyle={{ backgroundColor: '#1D2B3A', borderColor: '#2A3F54', color: '#fff' }}
