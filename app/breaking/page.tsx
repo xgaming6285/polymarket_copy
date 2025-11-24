@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Header from "../components/Header";
 import BreakingMarketRow from "../components/BreakingMarketRow";
 import Image from "next/image";
@@ -72,7 +72,9 @@ export default function BreakingPage() {
   return (
     <div className="h-screen bg-[#1D2B3A] text-white font-sans flex flex-col overflow-hidden">
       <div className="shrink-0">
-        <Header />
+        <Suspense fallback={<div className="h-20 bg-[#1D2B3A]" />}>
+          <Header />
+        </Suspense>
       </div>
 
       <main className="flex-1 flex flex-col w-full px-[6%] pb-8 pt-0 overflow-hidden min-h-0">

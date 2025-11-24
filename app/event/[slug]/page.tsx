@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Header from "@/app/components/Header";
+import HeaderWrapper from "@/app/components/HeaderWrapper";
 import EventPageContent, {
   OutcomeItem,
 } from "@/app/components/EventPageContent";
@@ -160,7 +160,7 @@ export default async function EventPage({
 
   return (
     <main className="min-h-screen bg-[#1d2b3a] text-white">
-      <Header />
+      <HeaderWrapper />
       <EventPageContent event={event} outcomes={outcomes} />
     </main>
   );
