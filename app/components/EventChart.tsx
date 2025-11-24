@@ -13,6 +13,7 @@ import {
 import { PriceHistory } from "../lib/polymarket-advanced";
 
 interface ChartSeries {
+  id?: string;
   name: string;
   data: PriceHistory[];
   color: string;
@@ -103,7 +104,7 @@ export default function EventChart({ series }: EventChartProps) {
         <Legend />
         {series.map((s, index) => (
           <Line
-            key={s.name}
+            key={s.id || `${s.name}-${index}`}
             name={s.name}
             type="monotone"
             dataKey={`series_${index}`}

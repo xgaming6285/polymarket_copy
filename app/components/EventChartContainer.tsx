@@ -11,6 +11,7 @@ interface TokenInfo {
 }
 
 interface ChartSeries {
+  id?: string;
   name: string;
   data: PriceHistory[];
   color: string;
@@ -71,6 +72,7 @@ export default function EventChartContainer({
         );
 
         const series = tokens.map((t, index) => ({
+          id: t.token_id,
           name: t.outcome,
           data: historyMap.get(t.token_id) || [],
           color: colors[index % colors.length],

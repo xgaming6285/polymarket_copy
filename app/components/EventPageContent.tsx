@@ -35,8 +35,8 @@ export default function EventPageContent({
     outcomes[0]
   );
 
-  // Tokens for chart
-  const chartTokens = outcomes.map((o) => ({
+  // Tokens for chart (top 4 max)
+  const chartTokens = outcomes.slice(0, 4).map((o) => ({
     token_id: o.yesTokenId,
     outcome: o.title,
     price: o.price,

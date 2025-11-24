@@ -93,6 +93,13 @@ export default async function EventPage({
     // Multi-market event (Group market)
     // Collect "Yes" tokens from all markets
     outcomes = event.markets
+      .filter((m: ApiMarket) => {
+        // Filter out invalid markets and placeholders
+        if (m.question?.startsWith("arch")) return false;
+        const title = m.groupItemTitle || m.question || "";
+        if (title.startsWith("Country ") && title.length === 9) return false; // Matches "Country X"
+        return true;
+      })
       .flatMap((m: ApiMarket) => {
         const tokens = getMarketTokens(m);
         const yesToken = tokens.find((t) => t.outcome === "Yes");
