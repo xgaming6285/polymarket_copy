@@ -6,7 +6,7 @@ import OrderBook from "@/app/components/OrderBook";
 import type { Event } from "@/app/lib/polymarket";
 
 // Force dynamic rendering for this page
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 export const revalidate = 0;
 
@@ -23,7 +23,9 @@ async function fetchEventBySlugDirect(slug: string): Promise<Event | null> {
     });
 
     if (!response.ok) {
-      console.error(`Failed to fetch event: ${response.status} ${response.statusText}`);
+      console.error(
+        `Failed to fetch event: ${response.status} ${response.statusText}`
+      );
       return null;
     }
 
@@ -176,11 +178,6 @@ export default async function EventPage({
           {/* Main Content - Chart */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-[#1A222C] rounded-lg p-6 h-[400px]">
-              {/* Debug info */}
-              <pre className="text-xs text-gray-500 overflow-auto max-h-20 mb-2">
-                Tokens: {JSON.stringify(tokensToChart, null, 2)}
-                Market Tokens Count: {getMarketTokens(market).length}
-              </pre>
               <EventChartContainer tokens={tokensToChart} />
             </div>
           </div>

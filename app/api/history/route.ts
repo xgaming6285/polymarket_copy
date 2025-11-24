@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
       },
-      cache: "no-store",
+      // Use short cache to reduce API calls
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {

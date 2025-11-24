@@ -29,26 +29,33 @@ export default function EventChartContainer({ tokens }: EventChartContainerProps
       const colors = ["#00C08B", "#2E75FF", "#FFB800", "#E63757"];
       
       try {
-        const historyPromises = tokens.map((t) => {
-          // Use our internal API route to avoid CORS and take advantage of Next.js caching if we enabled it
-          // Default to 30 days ago
-          const startTs = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
-          const url = `/api/history?market=${t.token_id}&startTs=${startTs}`;
-          
-          return fetch(url)
-            .then((res) => res.json())
-            .then((data) => data.history || [])
-            .catch((e) => {
-              console.error(`Error fetching history for ${t.token_id}:`, e);
-              return [];
-            });
+        // Use batch endpoint to fetch all histories in a single request
+        // Reduced to 7 days for faster loading
+        const startTs = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
+        const markets = tokens.map((t) => t.token_id);
+        
+        const response = await fetch('/api/history/batch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ markets, startTs }),
         });
 
-        const histories = await Promise.all(historyPromises);
+        if (!response.ok) {
+          throw new Error('Failed to fetch batch history');
+        }
+
+        const { results } = await response.json();
+        
+        // Create a map for fast lookup
+        const historyMap = new Map(
+          results.map((r: { market: string; history: any[] }) => [r.market, r.history])
+        );
 
         const series = tokens.map((t, index) => ({
           name: t.outcome,
-          data: histories[index] || [],
+          data: historyMap.get(t.token_id) || [],
           color: colors[index % colors.length],
         }));
 
