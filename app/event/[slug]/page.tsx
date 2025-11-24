@@ -96,6 +96,7 @@ export default async function EventPage({
       .filter((m: ApiMarket) => {
         // Filter out invalid markets and placeholders
         if (m.question?.startsWith("arch")) return false;
+        if (m.closed) return false; // Filter out resolved/closed markets
         const title = m.groupItemTitle || m.question || "";
         if (title.startsWith("Country ") && title.length === 9) return false; // Matches "Country X"
         if (title === "Other") return false; // Filter out "Other" from main list if needed

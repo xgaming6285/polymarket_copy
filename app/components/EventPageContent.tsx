@@ -31,9 +31,9 @@ export default function EventPageContent({
   event: EventData;
   outcomes: OutcomeItem[];
 }) {
-  const [selectedOutcome, setSelectedOutcome] = useState<OutcomeItem>(
-    outcomes[0]
-  );
+  const [selectedOutcome, setSelectedOutcome] = useState<
+    OutcomeItem | undefined
+  >(outcomes[0]);
 
   // Tokens for chart (top 4 max)
   const chartTokens = outcomes.slice(0, 4).map((o) => ({
@@ -41,6 +41,14 @@ export default function EventPageContent({
     outcome: o.title,
     price: o.price,
   }));
+
+  if (!selectedOutcome) {
+    return (
+      <div className="px-[6%] py-8 text-center text-gray-400">
+        No active markets found for this event.
+      </div>
+    );
+  }
 
   return (
     <div className="px-[6%] py-8">

@@ -152,14 +152,17 @@ export default function Header() {
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
           {/* Log In */}
-          <button className="text-blue-400 hover:text-blue-300 text-sm font-bold px-4 py-2">
+          <Link href="/login" className="text-blue-400 hover:text-blue-300 text-sm font-bold px-4 py-2">
             Log In
-          </button>
+          </Link>
 
           {/* Sign Up */}
-          <button className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold px-4 py-2 rounded-lg">
+          <Link
+            href="/signup"
+            className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold px-4 py-2 rounded-lg"
+          >
             Sign Up
-          </button>
+          </Link>
 
           {/* More Menu */}
           <div className="relative">

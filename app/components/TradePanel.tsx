@@ -329,7 +329,7 @@ export default function TradePanel({ selectedOutcome, eventImage }: TradePanelPr
             </button>
         ))}
         <button
-            onClick={() => setAmount(maxBuyAmount)} // Max available
+            onClick={() => setAmount(parseFloat(maxBuyAmount.toFixed(2)))} // Max available
             className="px-[12px] py-0 h-[32px] rounded-lg bg-[#2C3F52] hover:bg-[#384E63] text-white text-[12px] font-bold transition-colors flex items-center justify-center"
         >
             Max
