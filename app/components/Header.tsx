@@ -97,7 +97,7 @@ export default function Header() {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-xl font-semibold">Polymarket</span>
+            <span className="text-xl font-semibold">SupraCast</span>
             <span className="text-xl">🇺🇸</span>
           </div>
 
