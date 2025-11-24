@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 
 interface FilterSectionProps {
+  activeTag?: string;
+  sortBy?: string;
   onFiltersChange?: (filters: {
     activeTag: string;
     sortBy: string;
@@ -15,25 +17,33 @@ interface FilterSectionProps {
   }) => void;
 }
 
-export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
+export default function FilterSection({
+  activeTag: propActiveTag,
+  sortBy: propSortBy,
+  onFiltersChange,
+  tags = ["All"],
+}: FilterSectionProps & { tags?: string[] }) {
   const [filtersVisible, setFiltersVisible] = useState(false);
-  const [sortBy, setSortBy] = useState("Trending");
   const [frequency, setFrequency] = useState("All");
   const [status, setStatus] = useState("Active");
   const [hideSports, setHideSports] = useState(false);
   const [hideCrypto, setHideCrypto] = useState(false);
   const [hideEarnings, setHideEarnings] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [sortOpen, setSortOpen] = useState(false);
   const [frequencyOpen, setFrequencyOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [activeTag, setActiveTag] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Notify parent of filter changes
-  useEffect(() => {
+  const activeTag = propActiveTag ?? "All";
+  const sortBy = propSortBy ?? "Trending";
+
+  const notifyChange = (
+    overrides: Partial<Parameters<NonNullable<typeof onFiltersChange>>[0]> = {}
+  ) => {
     if (onFiltersChange) {
       onFiltersChange({
         activeTag,
@@ -44,51 +54,16 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
         hideCrypto,
         hideEarnings,
         searchQuery,
+        ...overrides,
       });
     }
-  }, [
-    activeTag,
-    sortBy,
-    frequency,
-    status,
-    hideSports,
-    hideCrypto,
-    hideEarnings,
-    searchQuery,
-    onFiltersChange,
-  ]);
+  };
 
-  const tags = [
-    "All",
-    "Trump",
-    "Ukraine",
-    "Epstein",
-    "Trump x Mamdani",
-    "Fed",
-    "Token Sales",
-    "Gemini 3",
-    "Venezuela",
-    "Best of 2025",
-    "Monad",
-    "Chile Election",
-    "Gaza",
-    "China",
-    "Mamdani",
-    "Google Search",
-    "Earnings",
-    "Global Elections",
-    "Israel",
-    "Trade War",
-    "India-Pakistan",
-    "AI",
-    "Parlays",
-    "Earn 4%",
-    "US Election",
-    "Crypto Prices",
-    "Bitcoin",
-    "Weather",
-    "Movies",
-  ];
+  // Notify parent when local filters change
+  useEffect(() => {
+    notifyChange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [frequency, status, hideSports, hideCrypto, hideEarnings, searchQuery]);
 
   const updateScrollButtons = () => {
     if (scrollRef.current) {
@@ -99,7 +74,6 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
   };
 
   useEffect(() => {
-    // Initial check after mount
     const timer = setTimeout(() => {
       updateScrollButtons();
     }, 100);
@@ -111,7 +85,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
       clearTimeout(timer);
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [tags]); // Re-run when tags change
 
   const scrollRight = () => {
     if (scrollRef.current) {
@@ -230,7 +204,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
             } transition-opacity duration-200`}
           >
             <button
-              onClick={() => setActiveTag("All")}
+              onClick={() => notifyChange({ activeTag: "All" })}
               className={`whitespace-nowrap m-0 px-3 py-1.5 rounded-md ${
                 activeTag === "All"
                   ? "bg-[#20415A] text-[#2C9CDB]"
@@ -256,7 +230,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
             {tags.slice(1).map((tag, index) => (
               <button
                 key={index}
-                onClick={() => setActiveTag(tag)}
+                onClick={() => notifyChange({ activeTag: tag })}
                 className={`whitespace-nowrap shrink-0 m-0 px-3 py-1.5 rounded-md ${
                   activeTag === tag
                     ? "bg-[#20415A] text-[#2C9CDB]"
@@ -321,7 +295,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
               <div className="absolute left-0 mt-2 w-48 bg-[#2A3F54] rounded-lg shadow-lg py-2 z-50">
                 <button
                   onClick={() => {
-                    setSortBy("Trending");
+                    notifyChange({ sortBy: "Trending" });
                     setSortOpen(false);
                   }}
                   className="w-full text-left px-4 py-2 text-white hover:bg-[#3D5266] flex items-center gap-2"
@@ -340,7 +314,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
                 </button>
                 <button
                   onClick={() => {
-                    setSortBy("24hr Volume");
+                    notifyChange({ sortBy: "24hr Volume" });
                     setSortOpen(false);
                   }}
                   className="w-full text-left px-4 py-2 text-white hover:bg-[#3D5266] flex items-center gap-2"
@@ -359,7 +333,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
                 </button>
                 <button
                   onClick={() => {
-                    setSortBy("Total Volume");
+                    notifyChange({ sortBy: "Total Volume" });
                     setSortOpen(false);
                   }}
                   className="w-full text-left px-4 py-2 text-white hover:bg-[#3D5266] flex items-center gap-2"
@@ -378,7 +352,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
                 </button>
                 <button
                   onClick={() => {
-                    setSortBy("Liquidity");
+                    notifyChange({ sortBy: "Liquidity" });
                     setSortOpen(false);
                   }}
                   className="w-full text-left px-4 py-2 text-white hover:bg-[#3D5266] flex items-center gap-2"
@@ -397,7 +371,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
                 </button>
                 <button
                   onClick={() => {
-                    setSortBy("Newest");
+                    notifyChange({ sortBy: "Newest" });
                     setSortOpen(false);
                   }}
                   className="w-full text-left px-4 py-2 text-white hover:bg-[#3D5266] flex items-center gap-2"
@@ -417,7 +391,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
                 </button>
                 <button
                   onClick={() => {
-                    setSortBy("Ending Soon");
+                    notifyChange({ sortBy: "Ending Soon" });
                     setSortOpen(false);
                   }}
                   className="w-full text-left px-4 py-2 text-white hover:bg-[#3D5266] flex items-center gap-2"
@@ -437,7 +411,7 @@ export default function FilterSection({ onFiltersChange }: FilterSectionProps) {
                 </button>
                 <button
                   onClick={() => {
-                    setSortBy("Competitive");
+                    notifyChange({ sortBy: "Competitive" });
                     setSortOpen(false);
                   }}
                   className="w-full text-left px-4 py-2 text-white hover:bg-[#3D5266] flex items-center gap-2"

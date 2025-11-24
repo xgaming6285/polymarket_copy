@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function Header() {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -10,6 +11,28 @@ export default function Header() {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTag = searchParams.get("tag");
+  const currentSort = searchParams.get("sort");
+
+  const isActive = (category: string) => {
+    if (category === "Trending") {
+      return (
+        pathname === "/" &&
+        !currentTag &&
+        (!currentSort || currentSort === "trending")
+      );
+    }
+    if (category === "Breaking") {
+      return pathname === "/breaking";
+    }
+    if (category === "New") {
+      return currentSort === "new" && !currentTag;
+    }
+    return currentTag === category;
+  };
 
   const categories = [
     "Politics",
@@ -152,7 +175,10 @@ export default function Header() {
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
           {/* Log In */}
-          <Link href="/login" className="text-blue-400 hover:text-blue-300 text-sm font-bold px-4 py-2">
+          <Link
+            href="/login"
+            className="text-blue-400 hover:text-blue-300 text-sm font-bold px-4 py-2"
+          >
             Log In
           </Link>
 
@@ -247,7 +273,11 @@ export default function Header() {
             {/* Trending - Special First Item */}
             <Link
               href="/"
-              className="flex items-center gap-2 text-white hover:text-gray-300 whitespace-nowrap pointer-events-auto"
+              className={`flex items-center gap-2 whitespace-nowrap pointer-events-auto ${
+                isActive("Trending")
+                  ? "text-white border-b-2 border-white"
+                  : "text-gray-400 hover:text-gray-300"
+              }`}
             >
               <svg
                 width="16"
@@ -262,29 +292,41 @@ export default function Header() {
               </svg>
               <span className="font-medium">Trending</span>
             </Link>
-            <a
+            <Link
               href="/breaking"
-              className="text-gray-400 hover:text-gray-300 whitespace-nowrap pointer-events-auto"
+              className={`whitespace-nowrap pointer-events-auto ${
+                isActive("Breaking")
+                  ? "text-white border-b-2 border-white"
+                  : "text-gray-400 hover:text-gray-300"
+              }`}
             >
               Breaking
-            </a>
-            <a
-              href="#"
-              className="text-gray-400 hover:text-gray-300 whitespace-nowrap pointer-events-auto"
+            </Link>
+            <Link
+              href="/?sort=new"
+              className={`whitespace-nowrap pointer-events-auto ${
+                isActive("New")
+                  ? "text-white border-b-2 border-white"
+                  : "text-gray-400 hover:text-gray-300"
+              }`}
             >
               New
-            </a>
+            </Link>
             <span className="text-gray-600">|</span>
 
             {/* Category Links */}
             {categories.map((category, index) => (
-              <a
+              <Link
                 key={index}
-                href="#"
-                className="text-gray-400 hover:text-gray-300 whitespace-nowrap pointer-events-auto"
+                href={`/?tag=${category}`}
+                className={`whitespace-nowrap pointer-events-auto ${
+                  isActive(category)
+                    ? "text-white border-b-2 border-white"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
               >
                 {category}
-              </a>
+              </Link>
             ))}
 
             <div

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,32 +22,36 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
-    console.log('Logging in...', formData.email);
+    console.log("Logging in...", formData.email);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
-      console.log('Login response:', data);
+      console.log("Login response:", data);
 
       if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong');
+        throw new Error(data.error || "Something went wrong");
       }
 
-      console.log('Login successful!');
+      console.log("Login successful!");
       // Redirect to home
-      router.push('/');
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.message);
+      router.push("/");
+    } catch (err: unknown) {
+      console.error("Login error:", err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }
@@ -69,7 +73,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-400 text-sm mb-1">Email Address</label>
+            <label className="block text-gray-400 text-sm mb-1">
+              Email Address
+            </label>
             <input
               type="email"
               name="email"
@@ -94,10 +100,15 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center text-gray-400">
-              <input type="checkbox" className="mr-2 rounded border-[#3D5266] bg-[#2f3f50]" />
+              <input
+                type="checkbox"
+                className="mr-2 rounded border-[#3D5266] bg-[#2f3f50]"
+              />
               Remember me
             </label>
-            <a href="#" className="text-blue-400 hover:text-blue-300">Forgot password?</a>
+            <a href="#" className="text-blue-400 hover:text-blue-300">
+              Forgot password?
+            </a>
           </div>
 
           <button
@@ -105,13 +116,13 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logging In...' : 'Log In'}
+            {loading ? "Logging In..." : "Log In"}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-sm">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-blue-400 hover:text-blue-300">
               Sign Up
             </Link>
@@ -121,5 +132,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-

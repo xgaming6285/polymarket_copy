@@ -32,7 +32,9 @@ export default function EventsGrid({
   const [tags, setTags] = useState<Tag[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
-  const [activeTradingCardId, setActiveTradingCardId] = useState<string | null>(null);
+  const [activeTradingCardId, setActiveTradingCardId] = useState<string | null>(
+    null
+  );
   const observer = useRef<IntersectionObserver | null>(null);
   const ITEMS_PER_PAGE = 100;
 
@@ -125,15 +127,31 @@ export default function EventsGrid({
 
         // Add tag filter if not "All"
         if (activeTag !== "All" && tags.length > 0) {
-          // Try to find matching tag slug
-          const matchingTag = tags.find(
-            (t) => t.label.toLowerCase() === activeTag.toLowerCase()
-          );
-          if (matchingTag) {
-            params.tag_slug = matchingTag.slug;
-          } else {
-            params.tag_slug = activeTag.toLowerCase().replace(/\s+/g, "-");
+          // Special mappings for categories that don't match tag slugs exactly
+          const categoryToSlugMap: Record<string, string> = {
+            Culture: "pop-culture",
+            // Add more mappings here as discovered
+          };
+
+          // First check if there's a special mapping
+          let tagSlug = categoryToSlugMap[activeTag];
+
+          if (!tagSlug) {
+            // Try to find matching tag slug from the fetched tags
+            const matchingTag = tags.find(
+              (t) => t.label.toLowerCase() === activeTag.toLowerCase()
+            );
+            if (matchingTag) {
+              tagSlug = matchingTag.slug;
+            }
           }
+
+          if (!tagSlug) {
+            // Fallback: convert to lowercase with dashes
+            tagSlug = activeTag.toLowerCase().replace(/\s+/g, "-");
+          }
+
+          params.tag_slug = tagSlug;
         }
 
         // Fetch events
@@ -312,8 +330,8 @@ export default function EventsGrid({
             // Last element - attach ref for intersection observer
             return (
               <div key={event.id} ref={lastEventElementRef}>
-                <EventCard 
-                  event={event} 
+                <EventCard
+                  event={event}
                   isActive={activeTradingCardId === event.id}
                   onActivate={() => setActiveTradingCardId(event.id)}
                   onDeactivate={() => setActiveTradingCardId(null)}
@@ -322,8 +340,8 @@ export default function EventsGrid({
             );
           } else {
             return (
-              <EventCard 
-                key={event.id} 
+              <EventCard
+                key={event.id}
                 event={event}
                 isActive={activeTradingCardId === event.id}
                 onActivate={() => setActiveTradingCardId(event.id)}

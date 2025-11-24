@@ -303,6 +303,89 @@ export async function fetchTags(): Promise<Tag[]> {
   }
 }
 
+export async function fetchRelatedTags(tag: string): Promise<string[]> {
+  // First, we need to determine the slug to query
+  // For "All" or "Trending", we fetch from the main /tags endpoint and extract popular tags
+  // For other categories, we use the filteredBySlug endpoint
+
+  try {
+    if (tag === "All" || tag === "Trending") {
+      // Fetch all tags and return a curated list for trending
+      const allTags = await fetchTags();
+
+      // For trending/all, we could either:
+      // 1. Return all tag labels
+      // 2. Return a subset of popular tags
+      // Let's return the first 30 tags as a reasonable default
+      const trendingTags = ["All", ...allTags.slice(0, 30).map((t) => t.label)];
+      return trendingTags;
+    }
+
+    // Special mappings for categories that don't match tag slugs exactly
+    const categoryToSlugMap: Record<string, string> = {
+      Culture: "pop-culture",
+      // Add more mappings here as discovered
+    };
+
+    // For specific categories, we need to find the correct slug
+    // First check if there's a special mapping
+    let querySlug = categoryToSlugMap[tag];
+
+    if (!querySlug) {
+      // Try to fetch all tags and find a matching one
+      const allTags = await fetchTags();
+      const matchingTag = allTags.find(
+        (t) =>
+          t.label.toLowerCase() === tag.toLowerCase() ||
+          t.slug.toLowerCase() === tag.toLowerCase().replace(/\s+/g, "-")
+      );
+
+      querySlug = matchingTag?.slug || tag.toLowerCase().replace(/\s+/g, "-");
+    }
+
+    // Now fetch related tags using the filteredBySlug endpoint
+    const url = `${API_BASE}/tags/filtered?tag=${encodeURIComponent(
+      querySlug
+    )}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      console.warn(
+        `Failed to fetch related tags for ${tag} (slug: ${querySlug})`
+      );
+      return ["All"];
+    }
+
+    const data: {
+      id: string;
+      label: string;
+      slug: string;
+      forceShow?: boolean;
+      forceHide?: boolean;
+      publishedAt?: string;
+      createdAt: string;
+      updatedAt?: string;
+      createdBy?: number;
+      updatedBy?: number;
+    }[] = await response.json();
+
+    // Return all tags without filtering (show both forceShow true/false and forceHide true/false)
+    const tags = ["All", ...data.map((t) => t.label)];
+    console.log(
+      `[fetchRelatedTags] ${tag} -> ${querySlug} -> ${tags.length} tags:`,
+      tags
+    );
+    return tags;
+  } catch (error) {
+    console.error("Error fetching related tags:", error);
+    return ["All"];
+  }
+}
+
 export async function searchMarkets(query: string): Promise<{
   markets: Market[];
   events: Event[];
