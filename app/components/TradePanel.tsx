@@ -22,22 +22,33 @@ interface TradePanelProps {
     market: unknown;
   };
   eventImage?: string;
+  selectedSide?: "Yes" | "No";
+  onSideChange?: (side: "Yes" | "No") => void;
 }
 
 export default function TradePanel({
   selectedOutcome,
   eventImage,
+  selectedSide = "Yes",
+  onSideChange,
 }: TradePanelProps) {
   const [tradeType, setTradeType] = useState<"Buy" | "Sell">("Buy"); // Tabs
-  const [side, setSide] = useState<"Yes" | "No">("Yes"); // Selected side
+  // const [side, setSide] = useState<"Yes" | "No">("Yes"); // Removed internal state
   const [amount, setAmount] = useState<number>(0);
 
-  const [currentOrderBook, setCurrentOrderBook] = useState<OrderBook | null>(
-    null
-  );
-  const [opposingOrderBook, setOpposingOrderBook] = useState<OrderBook | null>(
-    null
-  );
+  // Use prop if provided, otherwise default to "Yes" (though parent should control it)
+  const side = selectedSide;
+  const setSide = onSideChange || (() => {});
+
+  const [yesOrderBook, setYesOrderBook] = useState<OrderBook | null>(null);
+  const [noOrderBook, setNoOrderBook] = useState<OrderBook | null>(null);
+
+  // const [currentOrderBook, setCurrentOrderBook] = useState<OrderBook | null>(
+  //   null
+  // );
+  // const [opposingOrderBook, setOpposingOrderBook] = useState<OrderBook | null>(
+  //   null
+  // );
   // const [loading, setLoading] = useState(false); // Unused state
   // const [error, setError] = useState(""); // Unused state
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,76 +56,76 @@ export default function TradePanel({
   // Reset state when outcome changes
   useEffect(() => {
     setAmount(0);
-    setSide("Yes");
     setTradeType("Buy");
+    // Side reset is now handled by parent or we can force it here if we want, but better to let parent handle it.
+    // If parent changes outcome, it should also reset side if desired.
+    // setSide("Yes"); 
   }, [selectedOutcome.yesTokenId]); // Use ID to track change
 
-  // Determine token IDs based on selection
-  const currentTokenId =
-    side === "Yes" ? selectedOutcome.yesTokenId : selectedOutcome.noTokenId;
-  const opposingTokenId =
-    side === "Yes" ? selectedOutcome.noTokenId : selectedOutcome.yesTokenId;
-
   const fetchLiquidity = useCallback(async () => {
-    if (!currentTokenId) return;
+    if (!selectedOutcome.yesTokenId) return;
 
-    // setLoading(true);
-    // setError("");
     try {
-      const currentPromise = fetch(
-        `/api/orderbook?tokenId=${currentTokenId}`
+      const yesPromise = fetch(
+        `/api/orderbook?tokenId=${selectedOutcome.yesTokenId}`
       ).then((res) => res.json());
 
-      const opposingPromise = opposingTokenId
-        ? fetch(`/api/orderbook?tokenId=${opposingTokenId}`).then((res) =>
+      const noPromise = selectedOutcome.noTokenId
+        ? fetch(`/api/orderbook?tokenId=${selectedOutcome.noTokenId}`).then((res) =>
             res.json()
           )
         : Promise.resolve(null);
 
-      const [currentData, opposingData] = await Promise.all([
-        currentPromise,
-        opposingPromise,
+      const [yesData, noData] = await Promise.all([
+        yesPromise,
+        noPromise,
       ]);
 
-      if (currentData.error) throw new Error(currentData.error);
+      if (yesData.error) throw new Error(yesData.error);
 
       // Ensure correct sorting: Asks ascending (lowest first), Bids descending (highest first)
-      if (currentData.asks)
-        currentData.asks.sort(
+      if (yesData.asks)
+        yesData.asks.sort(
           (a: Order, b: Order) => parseFloat(a.price) - parseFloat(b.price)
         );
-      if (currentData.bids)
-        currentData.bids.sort(
+      if (yesData.bids)
+        yesData.bids.sort(
           (a: Order, b: Order) => parseFloat(b.price) - parseFloat(a.price)
         );
 
-      setCurrentOrderBook(currentData);
+      setYesOrderBook(yesData);
 
-      if (opposingData && !opposingData.error) {
+      if (noData && !noData.error) {
         // Ensure correct sorting for opposing book too
-        if (opposingData.asks)
-          opposingData.asks.sort(
+        if (noData.asks)
+          noData.asks.sort(
             (a: Order, b: Order) => parseFloat(a.price) - parseFloat(b.price)
           );
-        if (opposingData.bids)
-          opposingData.bids.sort(
+        if (noData.bids)
+          noData.bids.sort(
             (a: Order, b: Order) => parseFloat(b.price) - parseFloat(a.price)
           );
-        setOpposingOrderBook(opposingData);
+        setNoOrderBook(noData);
       }
     } catch (err) {
       console.error(err);
-      // setError("Failed to load liquidity"); // Suppress for now to avoid UI clutter
-    } finally {
-      // setLoading(false);
     }
-  }, [currentTokenId, opposingTokenId]);
+  }, [selectedOutcome.yesTokenId, selectedOutcome.noTokenId]);
 
   useEffect(() => {
     fetchLiquidity();
     const interval = setInterval(fetchLiquidity, 5000); // Refresh every 5s
     return () => clearInterval(interval);
   }, [fetchLiquidity]);
+
+  // Derived books based on side selection
+  const { currentOrderBook, opposingOrderBook } = useMemo(() => {
+    if (side === "Yes") {
+      return { currentOrderBook: yesOrderBook, opposingOrderBook: noOrderBook };
+    } else {
+      return { currentOrderBook: noOrderBook, opposingOrderBook: yesOrderBook };
+    }
+  }, [side, yesOrderBook, noOrderBook]);
 
   // Helper to calculate max buy amount and potential winnings
   // Adapted from TradeModal
@@ -203,35 +214,27 @@ export default function TradePanel({
   }, [amount, currentOrderBook, opposingOrderBook]);
 
   // Calculate prices based on Order Book
-  const { yesBook, noBook } = useMemo(() => {
-    if (side === "Yes") {
-      return { yesBook: currentOrderBook, noBook: opposingOrderBook };
-    } else {
-      return { yesBook: opposingOrderBook, noBook: currentOrderBook };
-    }
-  }, [side, currentOrderBook, opposingOrderBook]);
-
   const yesPrice = useMemo(() => {
     if (tradeType === "Buy") {
       // Buying Yes -> Ask Price
-      if (yesBook?.asks?.[0]) return parseFloat(yesBook.asks[0].price);
+      if (yesOrderBook?.asks?.[0]) return parseFloat(yesOrderBook.asks[0].price);
     } else {
       // Selling Yes -> Bid Price
-      if (yesBook?.bids?.[0]) return parseFloat(yesBook.bids[0].price);
+      if (yesOrderBook?.bids?.[0]) return parseFloat(yesOrderBook.bids[0].price);
     }
     return selectedOutcome.price; // Fallback
-  }, [tradeType, yesBook, selectedOutcome.price]);
+  }, [tradeType, yesOrderBook, selectedOutcome.price]);
 
   const noPrice = useMemo(() => {
     if (tradeType === "Buy") {
       // Buying No -> Ask Price
-      if (noBook?.asks?.[0]) return parseFloat(noBook.asks[0].price);
+      if (noOrderBook?.asks?.[0]) return parseFloat(noOrderBook.asks[0].price);
     } else {
       // Selling No -> Bid Price
-      if (noBook?.bids?.[0]) return parseFloat(noBook.bids[0].price);
+      if (noOrderBook?.bids?.[0]) return parseFloat(noOrderBook.bids[0].price);
     }
     return 1 - selectedOutcome.price; // Fallback
-  }, [tradeType, noBook, selectedOutcome.price]);
+  }, [tradeType, noOrderBook, selectedOutcome.price]);
 
   const getPriceDisplay = (p: number) => {
     if (p < 0.01) return "<1¢";

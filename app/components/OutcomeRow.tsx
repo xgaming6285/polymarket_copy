@@ -15,12 +15,20 @@ interface OutcomeRowProps {
   outcome: OutcomeItem;
   isSelected: boolean;
   onSelect: (outcome: OutcomeItem) => void;
+  selectedSide?: "Yes" | "No";
+  onSideSelect?: (side: "Yes" | "No") => void;
+  isFirst?: boolean;
+  eventImage?: string;
 }
 
 export default function OutcomeRow({
   outcome,
   isSelected,
   onSelect,
+  selectedSide,
+  onSideSelect,
+  isFirst = false,
+  eventImage,
 }: OutcomeRowProps) {
   const [yesPrice, setYesPrice] = useState<number | null>(null);
   const [noPrice, setNoPrice] = useState<number | null>(null);
@@ -94,42 +102,70 @@ export default function OutcomeRow({
     probability = Math.max(0, Math.min(1, probability));
   }
 
+  const imageSrc = outcome.market?.icon || outcome.market?.image;
+  // Only show image if it exists and is NOT the same as the main event image (to avoid redundancy)
+  const showImage = imageSrc && imageSrc !== eventImage;
+
   return (
     <div
       onClick={() => onSelect(outcome)}
-      className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-colors border ${
-        isSelected
-          ? "bg-[#2C3F51] border-[#00C08B]"
-          : "bg-[#2C3F51] border-transparent hover:bg-[#374E65]"
-      }`}
+      className={`grid grid-cols-[1fr_140px_1fr] items-center p-4 cursor-pointer transition-colors border-b border-[#374E65] bg-transparent hover:bg-[#263445] ${isFirst ? "border-t" : ""}`}
     >
-      <span className="font-medium text-white">{outcome.title}</span>
-      <div className="flex items-center gap-4">
-        {/* Probability / Price */}
-        <span className="text-white font-bold">
-          {(probability * 100).toFixed(0)}%
-        </span>
+      <div className="flex items-center gap-3 min-w-0">
+        {showImage && (
+            <div className="relative w-10 h-10 shrink-0">
+                <img 
+                    src={imageSrc} 
+                    alt={outcome.title}
+                    className="w-full h-full object-cover rounded-md"
+                />
+            </div>
+        )}
+        <div className="flex flex-col min-w-0">
+            <span className="font-bold text-white text-base truncate">{outcome.title}</span>
+            {/* Volume placeholder if available in outcome, otherwise hidden */}
+        </div>
+      </div>
 
+      <div className="flex items-center justify-center">
+        <span className="text-white font-bold text-3xl">
+        {(probability * 100).toFixed(0)}%
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2 justify-end">
         {/* Buy Yes */}
         <button
-          className="px-4 py-1.5 rounded bg-[#00C08B] hover:bg-[#00A07D] text-white text-sm font-bold transition-colors"
+          className={`min-w-[120px] px-4 py-4 rounded-[4px] text-sm font-bold transition-colors flex justify-between items-center ${
+            isSelected && selectedSide === "Yes"
+              ? "bg-[#43c773] text-white"
+              : "bg-[oklab(0.737847_-0.14654_0.0786822_/_0.25)] text-[#3dac69] hover:bg-[oklab(0.737847_-0.14654_0.0786822_/_0.35)]"
+          }`}
           onClick={(e) => {
             e.stopPropagation();
             onSelect(outcome);
+            onSideSelect?.("Yes");
           }}
         >
-          Buy Yes {(displayYesPrice * 100).toFixed(1)}¢
+          <span>Buy Yes</span>
+          <span className="opacity-90">{(displayYesPrice * 100).toFixed(1)}¢</span>
         </button>
 
         {/* Buy No */}
         <button
-          className="px-4 py-1.5 rounded bg-[#E63757] hover:bg-[#CC2946] text-white text-sm font-bold transition-colors"
+          className={`min-w-[120px] px-4 py-4 rounded-[4px] text-sm font-bold transition-colors flex justify-between items-center ${
+            isSelected && selectedSide === "No"
+              ? "bg-[#e13737] text-white"
+              : "bg-[oklab(0.599883_0.185508_0.0907_/_0.15)] text-[#c03538] hover:bg-[oklab(0.599883_0.185508_0.0907_/_0.25)]"
+          }`}
           onClick={(e) => {
             e.stopPropagation();
             onSelect(outcome);
+            onSideSelect?.("No");
           }}
         >
-          Buy No {(displayNoPrice * 100).toFixed(1)}¢
+          <span>Buy No</span>
+          <span className="opacity-90">{(displayNoPrice * 100).toFixed(1)}¢</span>
         </button>
       </div>
     </div>

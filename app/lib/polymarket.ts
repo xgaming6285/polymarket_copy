@@ -55,6 +55,7 @@ export interface Market {
   enable_order_book?: boolean;
   seconds_delay?: number;
   icon?: string;
+  image?: string;
   competitive?: number;
   groupItemTitle?: string;
 }

@@ -34,6 +34,19 @@ export default function EventPageContent({
   const [selectedOutcome, setSelectedOutcome] = useState<
     OutcomeItem | undefined
   >(outcomes[0]);
+  const [selectedSide, setSelectedSide] = useState<"Yes" | "No">("Yes");
+
+  // Reset side when outcome changes (optional, but mimics previous behavior)
+  const handleOutcomeSelect = (outcome: OutcomeItem) => {
+    setSelectedOutcome(outcome);
+    setSelectedSide("Yes"); // Reset to Yes default when switching outcomes, or keep as is?
+    // Usually defaulting to Yes is safer unless we want to preserve side across outcomes.
+    // Let's default to Yes.
+  };
+
+  const handleSideSelect = (side: "Yes" | "No") => {
+      setSelectedSide(side);
+  };
 
   // Tokens for chart (top 4 max)
   const chartTokens = outcomes.slice(0, 4).map((o) => ({
@@ -52,9 +65,9 @@ export default function EventPageContent({
 
   return (
     <div className="px-[6%] py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-12">
         {/* Left Column - Header & Main Content */}
-        <div className="lg:col-span-2">
+        <div className="min-w-0">
           {/* Event Header Info */}
           <div className="mb-8">
             <div className="flex gap-3 items-start">
@@ -146,13 +159,38 @@ export default function EventPageContent({
             </div>
 
             {/* Outcomes List */}
-            <div className="flex flex-col gap-2">
-              {outcomes.map((outcome) => (
+            <div className="flex flex-col">
+              {/* Table Headers */}
+              <div className="grid grid-cols-[1fr_140px_1fr] items-center px-4 pb-2">
+                <div className="flex items-center justify-start">
+                  <span 
+                    className="text-[#899cb2] font-bold tracking-wider"
+                    style={{ fontFamily: '"Open Sauce One", sans-serif', fontSize: "12px" }}
+                  >
+                    OUTCOME
+                  </span>
+                </div>
+                <div className="flex items-center justify-center">
+                  <span 
+                    className="text-[#899cb2] font-bold tracking-wider"
+                    style={{ fontFamily: '"Open Sauce One", sans-serif', fontSize: "12px" }}
+                  >
+                    % CHANCE
+                  </span>
+                </div>
+                <div className="flex items-center justify-end"></div> {/* Spacer for buttons column */}
+              </div>
+
+              {outcomes.map((outcome, index) => (
                 <OutcomeRow
                   key={outcome.id}
                   outcome={outcome}
                   isSelected={selectedOutcome.id === outcome.id}
-                  onSelect={setSelectedOutcome}
+                  onSelect={handleOutcomeSelect}
+                  selectedSide={selectedOutcome.id === outcome.id ? selectedSide : undefined}
+                  onSideSelect={handleSideSelect}
+                  isFirst={index === 0}
+                  eventImage={event.image}
                 />
               ))}
             </div>
@@ -165,6 +203,8 @@ export default function EventPageContent({
             <TradePanel
               selectedOutcome={selectedOutcome}
               eventImage={event.image}
+              selectedSide={selectedSide}
+              onSideChange={handleSideSelect}
             />
           </div>
         </div>

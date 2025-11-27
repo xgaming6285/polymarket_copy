@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense, useEffect } from "react";
+import { useState, Suspense, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Header from "./components/Header";
 import FilterSection from "./components/FilterSection";
@@ -34,11 +34,30 @@ function HomeContent() {
   });
 
   const [relatedTags, setRelatedTags] = useState<string[]>(["All"]);
+  const relatedTagsRef = useRef(relatedTags);
+
+  // Keep ref in sync with state to access current tags in effect without adding to dependency
+  useEffect(() => {
+    relatedTagsRef.current = relatedTags;
+  }, [relatedTags]);
 
   useEffect(() => {
     async function loadRelatedTags() {
       const tags = await fetchRelatedTags(activeTag);
-      setRelatedTags(tags);
+
+      // If we found new related tags (more than just "All"), update the list.
+      if (tags.length > 1) {
+        setRelatedTags(tags);
+      } else {
+        // If we didn't find new tags (e.g. we clicked a sub-category that has no children),
+        // we should check if the current activeTag is part of the EXISTING relatedTags.
+        // If it is, we preserve the existing tags so the user sees the siblings (context).
+        // If it's not in the current list, it's a standalone tag with no children, so we show just "All".
+        const isChildTag = relatedTagsRef.current.includes(activeTag);
+        if (!isChildTag) {
+          setRelatedTags(tags);
+        }
+      }
     }
     loadRelatedTags();
   }, [activeTag]);
