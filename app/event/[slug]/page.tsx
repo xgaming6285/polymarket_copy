@@ -116,6 +116,7 @@ export default async function EventPage({
             yesTokenId: yesToken.token_id,
             noTokenId: noToken?.token_id || "",
             market: m,
+            image: m.image,
           },
         ];
       })
@@ -140,6 +141,7 @@ export default async function EventPage({
             yesTokenId: yesToken.token_id,
             noTokenId: noToken?.token_id || "",
             market: market,
+            image: market.image,
           },
         ];
       }
@@ -153,6 +155,7 @@ export default async function EventPage({
           yesTokenId: t.token_id,
           noTokenId: "", // explicit No token might be complex
           market: market,
+          image: market.image,
         }))
         .sort((a: OutcomeItem, b: OutcomeItem) => b.price - a.price);
     }

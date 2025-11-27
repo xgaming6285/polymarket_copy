@@ -123,7 +123,11 @@ export default function OutcomeRow({
         )}
         <div className="flex flex-col min-w-0">
             <span className="font-bold text-white text-base truncate">{outcome.title}</span>
-            {/* Volume placeholder if available in outcome, otherwise hidden */}
+            {outcome.market.volume && parseFloat(outcome.market.volume) > 0 && (
+              <span className="text-[#818a95] text-sm font-medium mt-1">
+                ${Math.floor(parseFloat(outcome.market.volume)).toLocaleString("en-US")} Vol.
+              </span>
+            )}
         </div>
       </div>
 

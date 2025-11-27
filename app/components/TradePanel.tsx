@@ -20,6 +20,7 @@ interface TradePanelProps {
     yesTokenId: string;
     noTokenId: string;
     market: unknown;
+    image?: string;
   };
   eventImage?: string;
   selectedSide?: "Yes" | "No";
@@ -247,10 +248,10 @@ export default function TradePanel({
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="relative w-12 h-12 shrink-0 bg-[#00C08B] rounded-lg flex items-center justify-center">
-          {eventImage ? (
+          {selectedOutcome.image || eventImage ? (
             <NextImage
-              src={eventImage}
-              alt="Event"
+              src={selectedOutcome.image || eventImage || ""}
+              alt="Outcome"
               fill
               className="object-cover rounded-lg"
             />
@@ -271,7 +272,9 @@ export default function TradePanel({
           )}
         </div>
         <div>
-          <h2 className="font-bold text-white text-2xl leading-tight">$1B</h2>
+          <h2 className="font-bold text-white text-2xl leading-tight line-clamp-2">
+            {selectedOutcome.title}
+          </h2>
         </div>
       </div>
 

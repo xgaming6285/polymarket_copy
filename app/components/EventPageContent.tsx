@@ -16,6 +16,7 @@ export interface OutcomeItem {
   yesTokenId: string;
   noTokenId: string;
   market: ApiMarket; // full market if needed
+  image?: string;
 }
 
 interface EventData {
