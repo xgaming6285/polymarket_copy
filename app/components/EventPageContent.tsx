@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import EventChartContainer from "./EventChartContainer";
 import TradePanel from "./TradePanel";
+import OrderBookPanel from "./OrderBookPanel";
 
 import { Market as ApiMarket } from "@/app/lib/polymarket";
 
@@ -195,6 +196,18 @@ export default function EventPageContent({
                 />
               ))}
             </div>
+
+            {/* Order Book Panel - Shows when an outcome is selected */}
+            {selectedOutcome && (
+              <div className="mt-6">
+                <OrderBookPanel
+                  yesTokenId={selectedOutcome.yesTokenId}
+                  noTokenId={selectedOutcome.noTokenId}
+                  outcomeTitle={selectedOutcome.title}
+                  selectedSide={selectedSide}
+                />
+              </div>
+            )}
           </div>
         </div>
 
