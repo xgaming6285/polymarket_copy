@@ -217,7 +217,7 @@ export default function Header() {
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-green-400 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500 via-blue-500 to-green-400 flex items-center justify-center">
                     <span className="text-white font-bold text-sm">
                       {user.firstName?.charAt(0) || "U"}
                       {user.lastName?.charAt(0) || "S"}
@@ -243,7 +243,7 @@ export default function Header() {
                     {/* User Info */}
                     <div className="px-4 py-3 border-b border-[#2A3F54]">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 via-blue-500 to-green-400 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-linear-to-br from-purple-500 via-blue-500 to-green-400 flex items-center justify-center">
                           <span className="text-white font-bold">
                             {user.firstName?.charAt(0) || "U"}
                             {user.lastName?.charAt(0) || "S"}

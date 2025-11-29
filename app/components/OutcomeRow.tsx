@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { OutcomeItem } from "./EventPageContent";
 
 interface Order {
@@ -109,31 +110,40 @@ export default function OutcomeRow({
   return (
     <div
       onClick={() => onSelect(outcome)}
-      className={`grid grid-cols-[1fr_140px_1fr] items-center p-4 cursor-pointer transition-colors border-b border-[#374E65] bg-transparent hover:bg-[#263445] ${isFirst ? "border-t" : ""}`}
+      className={`grid grid-cols-[1fr_140px_1fr] items-center p-4 cursor-pointer transition-colors border-b border-[#374E65] bg-transparent hover:bg-[#263445] ${
+        isFirst ? "border-t" : ""
+      }`}
     >
       <div className="flex items-center gap-3 min-w-0">
         {showImage && (
-            <div className="relative w-10 h-10 shrink-0">
-                <img 
-                    src={imageSrc} 
-                    alt={outcome.title}
-                    className="w-full h-full object-cover rounded-md"
-                />
-            </div>
+          <div className="relative w-10 h-10 shrink-0">
+            <Image
+              src={imageSrc}
+              alt={outcome.title}
+              fill
+              className="object-cover rounded-md"
+            />
+          </div>
         )}
         <div className="flex flex-col min-w-0">
-            <span className="font-bold text-white text-base truncate">{outcome.title}</span>
-            {outcome.market.volume && parseFloat(outcome.market.volume) > 0 && (
-              <span className="text-[#818a95] text-sm font-medium mt-1">
-                ${Math.floor(parseFloat(outcome.market.volume)).toLocaleString("en-US")} Vol.
-              </span>
-            )}
+          <span className="font-bold text-white text-base truncate">
+            {outcome.title}
+          </span>
+          {outcome.market.volume && parseFloat(outcome.market.volume) > 0 && (
+            <span className="text-[#818a95] text-sm font-medium mt-1">
+              $
+              {Math.floor(parseFloat(outcome.market.volume)).toLocaleString(
+                "en-US"
+              )}{" "}
+              Vol.
+            </span>
+          )}
         </div>
       </div>
 
       <div className="flex items-center justify-center">
         <span className="text-white font-bold text-3xl">
-        {(probability * 100).toFixed(0)}%
+          {(probability * 100).toFixed(0)}%
         </span>
       </div>
 
@@ -143,7 +153,7 @@ export default function OutcomeRow({
           className={`min-w-[120px] px-4 py-4 rounded-[4px] text-sm font-bold transition-colors flex justify-between items-center ${
             isSelected && selectedSide === "Yes"
               ? "bg-[#43c773] text-white"
-              : "bg-[oklab(0.737847_-0.14654_0.0786822_/_0.25)] text-[#3dac69] hover:bg-[oklab(0.737847_-0.14654_0.0786822_/_0.35)]"
+              : "bg-[oklab(0.737847_-0.14654_0.0786822/0.25)] text-[#3dac69] hover:bg-[oklab(0.737847_-0.14654_0.0786822/0.35)]"
           }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -152,7 +162,9 @@ export default function OutcomeRow({
           }}
         >
           <span>Buy Yes</span>
-          <span className="opacity-90">{(displayYesPrice * 100).toFixed(1)}¢</span>
+          <span className="opacity-90">
+            {(displayYesPrice * 100).toFixed(1)}¢
+          </span>
         </button>
 
         {/* Buy No */}
@@ -160,7 +172,7 @@ export default function OutcomeRow({
           className={`min-w-[120px] px-4 py-4 rounded-[4px] text-sm font-bold transition-colors flex justify-between items-center ${
             isSelected && selectedSide === "No"
               ? "bg-[#e13737] text-white"
-              : "bg-[oklab(0.599883_0.185508_0.0907_/_0.15)] text-[#c03538] hover:bg-[oklab(0.599883_0.185508_0.0907_/_0.25)]"
+              : "bg-[oklab(0.599883_0.185508_0.0907/0.15)] text-[#c03538] hover:bg-[oklab(0.599883_0.185508_0.0907/0.25)]"
           }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -169,7 +181,9 @@ export default function OutcomeRow({
           }}
         >
           <span>Buy No</span>
-          <span className="opacity-90">{(displayNoPrice * 100).toFixed(1)}¢</span>
+          <span className="opacity-90">
+            {(displayNoPrice * 100).toFixed(1)}¢
+          </span>
         </button>
       </div>
     </div>

@@ -67,7 +67,7 @@ export default function EventPageContent({
 
   return (
     <div className="px-[6%] py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
         {/* Left Column - Header & Main Content */}
         <div className="min-w-0">
           {/* Event Header Info */}
