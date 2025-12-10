@@ -42,7 +42,9 @@ export default function TradePanel({
 }: TradePanelProps) {
   const { user, stats, refreshStats } = useAuth();
   const [tradeType, setTradeType] = useState<"Buy" | "Sell">("Buy"); // Tabs
-  const [amount, setAmount] = useState<number>(0);
+  const [orderType, setOrderType] = useState<"Market" | "Limit">("Limit"); // Order type
+  const [shares, setShares] = useState<number>(0); // Number of shares
+  const [limitPrice, setLimitPrice] = useState<number>(0); // Limit price in decimal (0.174 = 17.4¢)
   const [isTrading, setIsTrading] = useState(false);
   const [tradeError, setTradeError] = useState("");
   const [tradeSuccess, setTradeSuccess] = useState("");
@@ -72,7 +74,7 @@ export default function TradePanel({
 
   // Reset state when outcome changes
   useEffect(() => {
-    setAmount(0);
+    setShares(0);
     setTradeType("Buy");
     // Side reset is now handled by parent or we can force it here if we want, but better to let parent handle it.
     // If parent changes outcome, it should also reset side if desired.
@@ -132,100 +134,18 @@ export default function TradePanel({
     return () => clearInterval(interval);
   }, [fetchLiquidity]);
 
-  // Derived books based on side selection
-  const { currentOrderBook, opposingOrderBook } = useMemo(() => {
-    if (side === "Yes") {
-      return { currentOrderBook: yesOrderBook, opposingOrderBook: noOrderBook };
-    } else {
-      return { currentOrderBook: noOrderBook, opposingOrderBook: yesOrderBook };
-    }
-  }, [side, yesOrderBook, noOrderBook]);
-
-  // Helper to calculate max buy amount and potential winnings
-  // Adapted from TradeModal
-  /*
-  const calculateStats = useMemo(() => {
-    // ... calculation logic ...
-    // For brevity, basic implementation
-    return {
-        shares: 0,
-        avgPrice: 0,
-        maxBuy: 0
-    };
-  }, []); 
-  */
-
-  // We'll implement full calculation logic below
-
-  const maxBuyAmount = useMemo(() => {
-    let total = 0;
-    // 1. Direct Liquidity
-    if (currentOrderBook?.asks) {
-      total += currentOrderBook.asks.reduce(
-        (sum, ask) => sum + parseFloat(ask.price) * parseFloat(ask.size),
-        0
-      );
-    }
-    // 2. Synthetic Liquidity
-    if (opposingOrderBook?.bids) {
-      total += opposingOrderBook.bids.reduce((sum, bid) => {
-        const price = parseFloat(bid.price);
-        const size = parseFloat(bid.size);
-        return sum + size * (1 - price);
-      }, 0);
-    }
-    return total;
-  }, [currentOrderBook, opposingOrderBook]);
-
-  const potentialWinnings = useMemo(() => {
-    if (amount <= 0) return 0;
-    let remainingAmount = amount;
-    let totalShares = 0;
-
-    const consumeLiquidity = (offers: { price: number; size: number }[]) => {
-      for (const offer of offers) {
-        if (remainingAmount <= 0) break;
-        const costPerShare = offer.price;
-        const maxShares = offer.size;
-        const maxCost = maxShares * costPerShare;
-
-        if (remainingAmount >= maxCost) {
-          totalShares += maxShares;
-          remainingAmount -= maxCost;
-        } else {
-          const shares = remainingAmount / costPerShare;
-          totalShares += shares;
-          remainingAmount = 0;
-        }
-      }
-    };
-
-    const allLiquidity: { price: number; size: number }[] = [];
-    if (currentOrderBook?.asks) {
-      currentOrderBook.asks.forEach((ask) => {
-        allLiquidity.push({
-          price: parseFloat(ask.price),
-          size: parseFloat(ask.size),
-        });
-      });
-    }
-    if (opposingOrderBook?.bids) {
-      opposingOrderBook.bids.forEach((bid) => {
-        const bidPrice = parseFloat(bid.price);
-        const cost = 1 - bidPrice;
-        if (cost < 1 && cost > 0) {
-          allLiquidity.push({
-            price: cost,
-            size: parseFloat(bid.size),
-          });
-        }
-      });
+  // Calculate trade stats for Limit orders
+  // Simple calculation: Total = shares × limitPrice, To Win = shares × $1
+  const tradeStats = useMemo(() => {
+    if (shares <= 0 || limitPrice <= 0) {
+      return { total: 0, toWin: 0 };
     }
 
-    allLiquidity.sort((a, b) => a.price - b.price);
-    consumeLiquidity(allLiquidity);
-    return totalShares;
-  }, [amount, currentOrderBook, opposingOrderBook]);
+    const total = shares * limitPrice; // Cost to buy
+    const toWin = shares; // Each share pays $1 if outcome is correct
+
+    return { total, toWin };
+  }, [shares, limitPrice]);
 
   // Calculate prices based on Order Book
   const yesPrice = useMemo(() => {
@@ -252,6 +172,22 @@ export default function TradePanel({
     return 1 - selectedOutcome.price; // Fallback
   }, [tradeType, noOrderBook, selectedOutcome.price]);
 
+  // Initialize limit price from current market price
+  useEffect(() => {
+    const currentPrice = side === "Yes" ? yesPrice : noPrice;
+    if (currentPrice > 0 && limitPrice === 0) {
+      setLimitPrice(currentPrice);
+    }
+  }, [yesPrice, noPrice, side, limitPrice]);
+
+  // Update limit price when side changes
+  useEffect(() => {
+    const currentPrice = side === "Yes" ? yesPrice : noPrice;
+    if (currentPrice > 0) {
+      setLimitPrice(currentPrice);
+    }
+  }, [side, yesPrice, noPrice]);
+
   const getPriceDisplay = (p: number) => {
     if (p < 0.01) return "<1¢";
     if (p > 0.99) return ">99¢";
@@ -265,12 +201,12 @@ export default function TradePanel({
       return;
     }
 
-    if (amount <= 0) {
-      setTradeError("Please enter an amount");
+    if (shares <= 0) {
+      setTradeError("Please enter number of shares");
       return;
     }
 
-    if (tradeType === "Buy" && stats && amount > stats.cashBalance) {
+    if (tradeType === "Buy" && stats && tradeStats.total > stats.cashBalance) {
       setTradeError("Insufficient balance");
       return;
     }
@@ -280,8 +216,6 @@ export default function TradePanel({
     setTradeSuccess("");
 
     try {
-      const currentPrice = side === "Yes" ? yesPrice : noPrice;
-
       const res = await fetch("/api/trade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -294,8 +228,9 @@ export default function TradePanel({
           outcomeTitle: selectedOutcome.title,
           type: tradeType.toLowerCase(),
           outcome: side,
-          amount,
-          price: currentPrice,
+          amount: tradeStats.total, // Total cost
+          shares,
+          price: limitPrice,
         }),
       });
 
@@ -306,7 +241,7 @@ export default function TradePanel({
       }
 
       setTradeSuccess(data.message);
-      setAmount(0);
+      setShares(0);
 
       // Refresh stats
       await refreshStats();
@@ -385,8 +320,20 @@ export default function TradePanel({
             Sell
           </button>
         </div>
-        <div className="flex items-center text-sm font-bold text-white cursor-pointer hover:text-gray-300 mb-2">
-          Market <span className="ml-1">▼</span>
+        <div className="relative">
+          <select
+            value={orderType}
+            onChange={(e) => setOrderType(e.target.value as "Market" | "Limit")}
+            className="bg-transparent text-sm font-bold text-white cursor-pointer hover:text-gray-300 mb-2 appearance-none pr-5 outline-none"
+          >
+            <option value="Limit" className="bg-[#1D2B3A]">
+              Limit
+            </option>
+            <option value="Market" className="bg-[#1D2B3A]">
+              Market
+            </option>
+          </select>
+          <span className="absolute right-0 top-0 pointer-events-none">▼</span>
         </div>
       </div>
 
@@ -429,57 +376,70 @@ export default function TradePanel({
         </button>
       </div>
 
-      {/* Amount Input */}
-      <div className="flex items-start justify-between mb-4">
-        <span className="text-lg font-medium text-[#f2f2f2] mt-2">Amount</span>
-        <div
-          className="flex items-center justify-end cursor-text"
-          onClick={() => inputRef.current?.focus()}
-        >
-          <span
-            className="text-5xl font-medium transition-colors mr-1"
-            style={{ color: amount > 0 ? "#ffffff" : "#788089" }}
+      {/* Limit Price Input */}
+      <div className="flex items-center justify-between mb-4 py-3 border-b border-gray-700">
+        <span className="text-base font-medium text-[#f2f2f2]">
+          Limit Price
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setLimitPrice((prev) => Math.max(0.01, prev - 0.01))}
+            className="w-8 h-8 rounded-lg bg-[#2C3F52] hover:bg-[#384E63] text-white text-lg font-bold transition-colors flex items-center justify-center"
           >
-            $
-          </span>
+            −
+          </button>
+          <div className="bg-[#2C3F52] rounded-lg px-4 py-2 min-w-[100px] text-center">
+            <span className="text-xl font-bold text-white font-mono">
+              {(limitPrice * 100).toFixed(1)}¢
+            </span>
+          </div>
+          <button
+            onClick={() => setLimitPrice((prev) => Math.min(0.99, prev + 0.01))}
+            className="w-8 h-8 rounded-lg bg-[#2C3F52] hover:bg-[#384E63] text-white text-lg font-bold transition-colors flex items-center justify-center"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      {/* Shares Input */}
+      <div className="flex items-center justify-between mb-4 py-3 border-b border-gray-700">
+        <span className="text-base font-medium text-[#f2f2f2]">Shares</span>
+        <div className="flex items-center">
           <input
             ref={inputRef}
             type="number"
-            value={amount || ""}
+            value={shares || ""}
             onChange={(e) =>
-              setAmount(Math.max(0, parseFloat(e.target.value) || 0))
+              setShares(Math.max(0, parseInt(e.target.value) || 0))
             }
-            className="bg-transparent text-right outline-none font-mono text-5xl font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors placeholder-[#788089]"
+            className="bg-[#2C3F52] rounded-lg px-4 py-2 text-right outline-none font-mono text-xl font-bold text-white w-[120px] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             placeholder="0"
-            style={{
-              width: `${
-                Math.max(1, (amount || "").toString().length) +
-                (amount === 0 ? 0 : 0)
-              }ch`,
-              color: amount > 0 ? "#ffffff" : "#788089",
-            }}
           />
         </div>
       </div>
 
-      {/* Quick Amount Buttons */}
-      <div className="flex justify-end gap-1.5 mb-6">
-        {[1, 20, 100].map((val) => (
+      {/* Quick Shares Buttons */}
+      <div className="flex justify-center gap-2 mb-4">
+        {[-100, -10, 10, 100].map((val) => (
           <button
             key={val}
-            onClick={() => setAmount((prev) => prev + val)}
-            className="px-[12px] py-0 h-[32px] rounded-lg bg-[#2C3F52] hover:bg-[#384E63] text-white text-[12px] font-bold transition-colors flex items-center justify-center"
+            onClick={() => setShares((prev) => Math.max(0, prev + val))}
+            className="px-3 py-1.5 rounded-lg border border-[#374E65] hover:bg-[#384E63] text-white text-sm font-bold transition-colors"
           >
-            +${val}
+            {val > 0 ? `+${val}` : val}
           </button>
         ))}
-        <button
-          onClick={() => setAmount(parseFloat(maxBuyAmount.toFixed(2)))} // Max available
-          className="px-[12px] py-0 h-[32px] rounded-lg bg-[#2C3F52] hover:bg-[#384E63] text-white text-[12px] font-bold transition-colors flex items-center justify-center"
-        >
-          Max
-        </button>
       </div>
+
+      {/* Matching info */}
+      {shares > 0 && (
+        <div className="flex justify-end mb-4">
+          <span className="text-sm text-[#00C08B]">
+            ⓘ {shares.toFixed(2)} matching
+          </span>
+        </div>
+      )}
 
       {/* Error/Success Messages */}
       {tradeError && (
@@ -511,48 +471,34 @@ export default function TradePanel({
             ? "bg-[#2d9cdb] hover:bg-[#238ac3]"
             : isTrading
             ? "bg-[#1a6b9c] cursor-wait"
-            : tradeType === "Buy"
-            ? side === "Yes"
-              ? "bg-[#00C08B] hover:bg-[#00a879]"
-              : "bg-[#e13737] hover:bg-[#c72f2f]"
             : "bg-[#2d9cdb] hover:bg-[#238ac3]"
-        } ${amount === 0 ? "opacity-80" : ""}`}
-        disabled={amount === 0 || isTrading || (hasMounted && !user)}
+        } ${shares === 0 ? "opacity-80" : ""}`}
+        disabled={shares === 0 || isTrading || (hasMounted && !user)}
       >
         {!hasMounted
-          ? `${tradeType} ${side}`
+          ? "Trade"
           : !user
           ? "Log In to Trade"
           : isTrading
           ? "Processing..."
-          : `${tradeType} ${side}`}
+          : "Trade"}
       </button>
 
-      {/* Summary */}
-
-      {amount > 0 && (
-        <div className="mt-4 p-3 bg-[#1D2B3A] rounded border border-gray-700 text-sm space-y-2">
-          <div className="flex justify-between">
-            <span className="text-gray-400">Avg Price</span>
-            <span className="text-white font-mono">
-              {(amount / potentialWinnings || 0).toFixed(3)}¢
+      {/* Summary - Total and To Win */}
+      {shares > 0 && limitPrice > 0 && (
+        <div className="mt-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-base text-gray-400">Total</span>
+            <span className="text-xl font-mono font-bold text-[#00C08B]">
+              ${tradeStats.total.toFixed(2)}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Est. Shares</span>
-            <span className="text-white font-mono">
-              {potentialWinnings.toFixed(2)}
+          <div className="flex justify-between items-center">
+            <span className="text-base text-gray-400 flex items-center gap-1">
+              To Win <span className="text-lg">💵</span>
             </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Potential Return</span>
-            <span
-              className={`${
-                side === "Yes" ? "text-[#00C08B]" : "text-[#E63757]"
-              } font-mono`}
-            >
-              ${potentialWinnings.toFixed(2)} (
-              {((potentialWinnings / amount) * 100 - 100).toFixed(0)}%)
+            <span className="text-xl font-mono font-bold text-[#00C08B]">
+              ${tradeStats.toWin.toFixed(0)}
             </span>
           </div>
         </div>
