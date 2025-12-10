@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
 
-export default function Header() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function HeaderContent() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [navMoreOpen, setNavMoreOpen] = useState(false);
   const [activeMoreItem, setActiveMoreItem] = useState("");
@@ -807,5 +808,27 @@ export default function Header() {
         )}
       </div>
     </header>
+  );
+}
+
+// Default export wraps HeaderContent in Suspense for useSearchParams
+export default function Header() {
+  return (
+    <Suspense fallback={
+      <header className="bg-[#1D2B3A] border-b border-[#2A3F54]">
+        <div className="flex items-center justify-between px-3 sm:px-[6%] pt-4 pb-2 gap-2 sm:gap-4 h-16">
+          <div className="flex items-center gap-2 text-white">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="text-lg sm:text-xl font-semibold hidden sm:inline">SupraCast</span>
+          </div>
+        </div>
+      </header>
+    }>
+      <HeaderContent />
+    </Suspense>
   );
 }
