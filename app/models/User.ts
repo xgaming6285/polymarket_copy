@@ -7,6 +7,8 @@ export interface IUser extends Document {
   phone: string;
   country: string;
   password: string;
+  balance: number;
+  portfolioValue: number;
   createdAt: Date;
 }
 
@@ -17,9 +19,11 @@ const UserSchema: Schema = new Schema({
   phone: { type: String, required: true },
   country: { type: String, required: true },
   password: { type: String, required: true },
+  balance: { type: Number, default: 1000000 }, // Starting balance of $1M
+  portfolioValue: { type: Number, default: 0 }, // Value of open positions
   createdAt: { type: Date, default: Date.now },
 }, {
-    collection: 'users' // Explicitly setting the collection name as requested ("outer separate collection")
+    collection: 'users'
 });
 
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

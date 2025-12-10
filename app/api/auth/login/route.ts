@@ -45,6 +45,9 @@ export async function POST(req: Request) {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          balance: user.balance || 1000000,
+          portfolioValue: user.portfolioValue || 0,
+          createdAt: user.createdAt,
         },
       },
       { status: 200 }

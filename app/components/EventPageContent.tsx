@@ -21,6 +21,7 @@ export interface OutcomeItem {
 }
 
 interface EventData {
+  id: string;
   title: string;
   image?: string;
   volume?: string | number;
@@ -47,7 +48,7 @@ export default function EventPageContent({
   };
 
   const handleSideSelect = (side: "Yes" | "No") => {
-      setSelectedSide(side);
+    setSelectedSide(side);
   };
 
   // Tokens for chart (top 4 max)
@@ -164,22 +165,29 @@ export default function EventPageContent({
               {/* Table Headers - Responsive */}
               <div className="hidden sm:grid grid-cols-[1fr_100px_auto] lg:grid-cols-[1fr_140px_1fr] items-center px-2 sm:px-4 pb-2">
                 <div className="flex items-center justify-start">
-                  <span 
+                  <span
                     className="text-[#899cb2] font-bold tracking-wider"
-                    style={{ fontFamily: '"Open Sauce One", sans-serif', fontSize: "12px" }}
+                    style={{
+                      fontFamily: '"Open Sauce One", sans-serif',
+                      fontSize: "12px",
+                    }}
                   >
                     OUTCOME
                   </span>
                 </div>
                 <div className="flex items-center justify-center">
-                  <span 
+                  <span
                     className="text-[#899cb2] font-bold tracking-wider"
-                    style={{ fontFamily: '"Open Sauce One", sans-serif', fontSize: "12px" }}
+                    style={{
+                      fontFamily: '"Open Sauce One", sans-serif',
+                      fontSize: "12px",
+                    }}
                   >
                     % CHANCE
                   </span>
                 </div>
-                <div className="flex items-center justify-end"></div> {/* Spacer for buttons column */}
+                <div className="flex items-center justify-end"></div>{" "}
+                {/* Spacer for buttons column */}
               </div>
 
               {outcomes.map((outcome, index) => (
@@ -188,7 +196,9 @@ export default function EventPageContent({
                   outcome={outcome}
                   isSelected={selectedOutcome.id === outcome.id}
                   onSelect={handleOutcomeSelect}
-                  selectedSide={selectedOutcome.id === outcome.id ? selectedSide : undefined}
+                  selectedSide={
+                    selectedOutcome.id === outcome.id ? selectedSide : undefined
+                  }
                   onSideSelect={handleSideSelect}
                   isFirst={index === 0}
                   eventImage={event.image}
@@ -215,6 +225,8 @@ export default function EventPageContent({
           <div className="sticky top-4">
             <TradePanel
               selectedOutcome={selectedOutcome}
+              eventId={event.id}
+              eventTitle={event.title}
               eventImage={event.image}
               selectedSide={selectedSide}
               onSideChange={handleSideSelect}

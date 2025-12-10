@@ -12,8 +12,23 @@ export default function Header() {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { user, logout, isLoading } = useAuth();
+  const { user, stats, logout, isLoading } = useAuth();
+
+  // Handle hydration - only show user-specific content after mount
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}K`;
+    }
+    return `$${value.toFixed(2)}`;
+  };
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -195,19 +210,23 @@ export default function Header() {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {!isLoading && user && user.firstName && user.lastName ? (
+          {hasMounted && !isLoading && user && user.firstName && user.lastName ? (
             <>
               {/* Portfolio - Hidden on small mobile */}
-              <div className="text-center mr-1 sm:mr-2 hidden sm:block">
+              <Link href="/profile" className="text-center mr-1 sm:mr-2 hidden sm:block hover:opacity-80 transition-opacity">
                 <div className="text-gray-400 text-xs">Portfolio</div>
-                <div className="text-green-400 font-bold text-sm">$0.00</div>
-              </div>
+                <div className={`font-bold text-sm ${(stats?.portfolioValue || 0) > 0 ? 'text-blue-400' : 'text-gray-400'}`}>
+                  {stats ? formatCurrency(stats.portfolioValue) : '$0.00'}
+                </div>
+              </Link>
 
               {/* Cash - Hidden on small mobile */}
-              <div className="text-center mr-1 sm:mr-2 hidden sm:block">
+              <Link href="/profile" className="text-center mr-1 sm:mr-2 hidden sm:block hover:opacity-80 transition-opacity">
                 <div className="text-gray-400 text-xs">Cash</div>
-                <div className="text-green-400 font-bold text-sm">$0.00</div>
-              </div>
+                <div className="text-green-400 font-bold text-sm">
+                  {stats ? formatCurrency(stats.cashBalance) : '$1.00M'}
+                </div>
+              </Link>
 
               {/* Deposit Button */}
               <button className="bg-[#2c9cdb] hover:bg-[#3db0ef] text-white font-bold px-3 sm:px-6 py-2 rounded-lg text-xs sm:text-sm mr-1 sm:mr-2">
@@ -318,6 +337,24 @@ export default function Header() {
                     </button>
 
                     {/* Menu Items */}
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <span>📊 My Profile</span>
+                    </Link>
                     <a
                       href="#"
                       className="flex items-center gap-3 px-4 py-2 text-gray-400 hover:text-white hover:bg-[#2A3F54]"

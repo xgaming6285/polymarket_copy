@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create user with 1M starting balance
     console.log("API Route: Creating user...");
     const user = await User.create({
       firstName,
@@ -49,6 +49,8 @@ export async function POST(req: Request) {
       phone,
       country,
       password: hashedPassword,
+      balance: 1000000, // Starting balance of $1M
+      portfolioValue: 0,
     });
     console.log("API Route: User created successfully", user._id);
 
@@ -60,6 +62,9 @@ export async function POST(req: Request) {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          balance: user.balance,
+          portfolioValue: user.portfolioValue,
+          createdAt: user.createdAt,
         },
       },
       { status: 201 }

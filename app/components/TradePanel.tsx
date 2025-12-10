@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import NextImage from "next/image";
+import { useAuth } from "../contexts/AuthContext";
 
 interface OrderBook {
   asks: Array<{ price: string; size: string }>;
@@ -22,20 +23,35 @@ interface TradePanelProps {
     market: unknown;
     image?: string;
   };
+  eventId?: string;
+  eventTitle?: string;
   eventImage?: string;
   selectedSide?: "Yes" | "No";
   onSideChange?: (side: "Yes" | "No") => void;
+  onTradeSuccess?: () => void;
 }
 
 export default function TradePanel({
   selectedOutcome,
+  eventId,
+  eventTitle,
   eventImage,
   selectedSide = "Yes",
   onSideChange,
+  onTradeSuccess,
 }: TradePanelProps) {
+  const { user, stats, refreshStats } = useAuth();
   const [tradeType, setTradeType] = useState<"Buy" | "Sell">("Buy"); // Tabs
-  // const [side, setSide] = useState<"Yes" | "No">("Yes"); // Removed internal state
   const [amount, setAmount] = useState<number>(0);
+  const [isTrading, setIsTrading] = useState(false);
+  const [tradeError, setTradeError] = useState("");
+  const [tradeSuccess, setTradeSuccess] = useState("");
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Handle hydration - only show user-specific content after mount
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // Use prop if provided, otherwise default to "Yes" (though parent should control it)
   const side = selectedSide;
@@ -60,7 +76,7 @@ export default function TradePanel({
     setTradeType("Buy");
     // Side reset is now handled by parent or we can force it here if we want, but better to let parent handle it.
     // If parent changes outcome, it should also reset side if desired.
-    // setSide("Yes"); 
+    // setSide("Yes");
   }, [selectedOutcome.yesTokenId]); // Use ID to track change
 
   const fetchLiquidity = useCallback(async () => {
@@ -72,15 +88,12 @@ export default function TradePanel({
       ).then((res) => res.json());
 
       const noPromise = selectedOutcome.noTokenId
-        ? fetch(`/api/orderbook?tokenId=${selectedOutcome.noTokenId}`).then((res) =>
-            res.json()
+        ? fetch(`/api/orderbook?tokenId=${selectedOutcome.noTokenId}`).then(
+            (res) => res.json()
           )
         : Promise.resolve(null);
 
-      const [yesData, noData] = await Promise.all([
-        yesPromise,
-        noPromise,
-      ]);
+      const [yesData, noData] = await Promise.all([yesPromise, noPromise]);
 
       if (yesData.error) throw new Error(yesData.error);
 
@@ -218,10 +231,12 @@ export default function TradePanel({
   const yesPrice = useMemo(() => {
     if (tradeType === "Buy") {
       // Buying Yes -> Ask Price
-      if (yesOrderBook?.asks?.[0]) return parseFloat(yesOrderBook.asks[0].price);
+      if (yesOrderBook?.asks?.[0])
+        return parseFloat(yesOrderBook.asks[0].price);
     } else {
       // Selling Yes -> Bid Price
-      if (yesOrderBook?.bids?.[0]) return parseFloat(yesOrderBook.bids[0].price);
+      if (yesOrderBook?.bids?.[0])
+        return parseFloat(yesOrderBook.bids[0].price);
     }
     return selectedOutcome.price; // Fallback
   }, [tradeType, yesOrderBook, selectedOutcome.price]);
@@ -241,6 +256,74 @@ export default function TradePanel({
     if (p < 0.01) return "<1¢";
     if (p > 0.99) return ">99¢";
     return (p * 100).toFixed(1) + "¢";
+  };
+
+  // Execute trade
+  const executeTrade = async () => {
+    if (!user?.id) {
+      setTradeError("Please log in to trade");
+      return;
+    }
+
+    if (amount <= 0) {
+      setTradeError("Please enter an amount");
+      return;
+    }
+
+    if (tradeType === "Buy" && stats && amount > stats.cashBalance) {
+      setTradeError("Insufficient balance");
+      return;
+    }
+
+    setIsTrading(true);
+    setTradeError("");
+    setTradeSuccess("");
+
+    try {
+      const currentPrice = side === "Yes" ? yesPrice : noPrice;
+
+      const res = await fetch("/api/trade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          eventId: eventId || selectedOutcome.yesTokenId,
+          eventTitle: eventTitle || selectedOutcome.title,
+          eventImage,
+          marketId: selectedOutcome.yesTokenId,
+          outcomeTitle: selectedOutcome.title,
+          type: tradeType.toLowerCase(),
+          outcome: side,
+          amount,
+          price: currentPrice,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Trade failed");
+      }
+
+      setTradeSuccess(data.message);
+      setAmount(0);
+
+      // Refresh stats
+      await refreshStats();
+
+      // Notify parent
+      if (onTradeSuccess) {
+        onTradeSuccess();
+      }
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setTradeSuccess(""), 3000);
+    } catch (error) {
+      console.error("Trade error:", error);
+      setTradeError(error instanceof Error ? error.message : "Trade failed");
+    } finally {
+      setIsTrading(false);
+    }
   };
 
   return (
@@ -398,14 +481,51 @@ export default function TradePanel({
         </button>
       </div>
 
-      {/* Trade Button */}
+      {/* Error/Success Messages */}
+      {tradeError && (
+        <div className="mb-3 p-3 bg-red-500/10 border border-red-500/50 text-red-400 text-sm rounded-lg">
+          {tradeError}
+        </div>
+      )}
+      {tradeSuccess && (
+        <div className="mb-3 p-3 bg-green-500/10 border border-green-500/50 text-green-400 text-sm rounded-lg">
+          {tradeSuccess}
+        </div>
+      )}
+
+      {/* Balance Display - only show after mount to avoid hydration mismatch */}
+      {hasMounted && user && stats && (
+        <div className="mb-3 text-sm text-gray-400 text-right">
+          Available:{" "}
+          <span className="text-white font-semibold">
+            ${stats.cashBalance.toLocaleString()}
+          </span>
+        </div>
+      )}
+
+      {/* Trade Button - use consistent initial state for SSR */}
       <button
-        className={`w-full py-3.5 rounded-lg font-bold text-lg text-white shadow-lg transition-all transform active:scale-[0.98] bg-[#2d9cdb] hover:bg-[#238ac3] ${
-          amount === 0 ? "opacity-80" : ""
-        }`}
-        disabled={amount === 0}
+        onClick={executeTrade}
+        className={`w-full py-3.5 rounded-lg font-bold text-lg text-white shadow-lg transition-all transform active:scale-[0.98] ${
+          !hasMounted || !user
+            ? "bg-[#2d9cdb] hover:bg-[#238ac3]"
+            : isTrading
+            ? "bg-[#1a6b9c] cursor-wait"
+            : tradeType === "Buy"
+            ? side === "Yes"
+              ? "bg-[#00C08B] hover:bg-[#00a879]"
+              : "bg-[#e13737] hover:bg-[#c72f2f]"
+            : "bg-[#2d9cdb] hover:bg-[#238ac3]"
+        } ${amount === 0 ? "opacity-80" : ""}`}
+        disabled={amount === 0 || isTrading || (hasMounted && !user)}
       >
-        Trade
+        {!hasMounted
+          ? `${tradeType} ${side}`
+          : !user
+          ? "Log In to Trade"
+          : isTrading
+          ? "Processing..."
+          : `${tradeType} ${side}`}
       </button>
 
       {/* Summary */}
