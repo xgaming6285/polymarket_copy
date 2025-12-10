@@ -89,17 +89,18 @@ export default function Header() {
   return (
     <header className="bg-[#1D2B3A] border-b border-[#2A3F54]">
       {/* Top Header */}
-      <div className="flex items-center justify-between px-[6%] pt-4 pb-2">
+      <div className="flex items-center justify-between px-3 sm:px-[6%] pt-4 pb-2 gap-2 sm:gap-4">
         {/* Left: Logo and Search */}
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
           {/* Logo */}
-          <div className="flex items-center gap-2 text-white">
+          <div className="flex items-center gap-1 sm:gap-2 text-white shrink-0">
             <svg
               width="24"
               height="24"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              className="shrink-0"
             >
               <path
                 d="M12 2L2 7L12 12L22 7L12 2Z"
@@ -123,13 +124,15 @@ export default function Header() {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-xl font-semibold">SupraCast</span>
-            <span className="text-xl">🇺🇸</span>
+            <span className="text-lg sm:text-xl font-semibold hidden sm:inline">
+              SupraCast
+            </span>
+            <span className="text-lg sm:text-xl">🇺🇸</span>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-xl">
-            <div className="relative">
+          {/* Search Bar - Hidden on very small screens, icon only on mobile */}
+          <div className="hidden md:flex flex-1 max-w-xl">
+            <div className="relative w-full">
               <input
                 type="text"
                 placeholder="Search"
@@ -154,9 +157,24 @@ export default function Header() {
             </div>
           </div>
 
-          {/* How it works */}
+          {/* Mobile search icon */}
+          <button className="md:hidden bg-[#2f3f50] p-2 rounded-lg text-gray-400">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
+
+          {/* How it works - Hidden on mobile, abbreviated on tablets */}
           <button
-            className="flex items-center gap-2 text-[#2c9cdb] hover:text-[#3db0ef] ml-2 font-bold"
+            className="hidden sm:flex items-center gap-2 text-[#2c9cdb] hover:text-[#3db0ef] ml-2 font-bold shrink-0"
             style={{ fontSize: "14px" }}
           >
             <svg
@@ -171,28 +189,28 @@ export default function Header() {
               <path d="M12 16v-4"></path>
               <path d="M12 8h.01"></path>
             </svg>
-            <span>How it works</span>
+            <span className="hidden lg:inline">How it works</span>
           </button>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {!isLoading && user && user.firstName && user.lastName ? (
             <>
-              {/* Portfolio */}
-              <div className="text-center mr-2">
+              {/* Portfolio - Hidden on small mobile */}
+              <div className="text-center mr-1 sm:mr-2 hidden sm:block">
                 <div className="text-gray-400 text-xs">Portfolio</div>
                 <div className="text-green-400 font-bold text-sm">$0.00</div>
               </div>
 
-              {/* Cash */}
-              <div className="text-center mr-2">
+              {/* Cash - Hidden on small mobile */}
+              <div className="text-center mr-1 sm:mr-2 hidden sm:block">
                 <div className="text-gray-400 text-xs">Cash</div>
                 <div className="text-green-400 font-bold text-sm">$0.00</div>
               </div>
 
               {/* Deposit Button */}
-              <button className="bg-[#2c9cdb] hover:bg-[#3db0ef] text-white font-bold px-6 py-2 rounded-lg text-sm mr-2">
+              <button className="bg-[#2c9cdb] hover:bg-[#3db0ef] text-white font-bold px-3 sm:px-6 py-2 rounded-lg text-xs sm:text-sm mr-1 sm:mr-2">
                 Deposit
               </button>
 
@@ -515,12 +533,12 @@ export default function Header() {
       </div>
 
       {/* Main Navigation */}
-      <div className="relative  overflow-visible">
+      <div className="relative overflow-visible">
         {/* Left Arrow - appears when scrolled */}
         {canScrollLeft && (
           <button
             onClick={handleScrollLeft}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-[#1D2B3A] text-white hover:text-gray-300 hover:bg-[#2A3F54] p-2 rounded-full shadow-lg transition-all duration-200"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-20 bg-[#1D2B3A] text-white hover:text-gray-300 hover:bg-[#2A3F54] p-1 sm:p-2 rounded-full shadow-lg transition-all duration-200"
           >
             <svg
               width="16"
@@ -535,17 +553,22 @@ export default function Header() {
           </button>
         )}
 
-        <div className="flex items-center px-[6%] py-3 overflow-visible">
+        <div className="flex items-center px-3 sm:px-[6%] py-3 overflow-visible">
           {/* Scrollable Categories Container */}
           <div
             ref={scrollContainerRef}
-            className="flex items-center gap-6 overflow-x-hidden flex-1 scroll-smooth pointer-events-none"
+            className="flex items-center gap-3 sm:gap-6 overflow-x-auto flex-1 scroll-smooth scrollbar-hide"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            onScroll={(e) => {
+              const target = e.target as HTMLDivElement;
+              setScrollPosition(target.scrollLeft);
+              setCanScrollLeft(target.scrollLeft > 0);
+            }}
           >
             {/* Trending - Special First Item */}
             <Link
               href="/"
-              className={`flex items-center gap-2 whitespace-nowrap pointer-events-auto ${
+              className={`flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
                 isActive("Trending")
                   ? "text-white border-b-2 border-white"
                   : "text-gray-400 hover:text-gray-300"
@@ -558,6 +581,7 @@ export default function Header() {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                className="shrink-0"
               >
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                 <polyline points="17 6 23 6 23 12"></polyline>
@@ -566,7 +590,7 @@ export default function Header() {
             </Link>
             <Link
               href="/breaking"
-              className={`whitespace-nowrap pointer-events-auto ${
+              className={`whitespace-nowrap text-sm sm:text-base ${
                 isActive("Breaking")
                   ? "text-white border-b-2 border-white"
                   : "text-gray-400 hover:text-gray-300"
@@ -576,7 +600,7 @@ export default function Header() {
             </Link>
             <Link
               href="/?sort=new"
-              className={`whitespace-nowrap pointer-events-auto ${
+              className={`whitespace-nowrap text-sm sm:text-base ${
                 isActive("New")
                   ? "text-white border-b-2 border-white"
                   : "text-gray-400 hover:text-gray-300"
@@ -584,14 +608,14 @@ export default function Header() {
             >
               New
             </Link>
-            <span className="text-gray-600">|</span>
+            <span className="text-gray-600 hidden sm:inline">|</span>
 
             {/* Category Links */}
             {categories.map((category, index) => (
               <Link
                 key={index}
                 href={`/?tag=${category}`}
-                className={`whitespace-nowrap pointer-events-auto ${
+                className={`whitespace-nowrap text-sm sm:text-base ${
                   isActive(category)
                     ? "text-white border-b-2 border-white"
                     : "text-gray-400 hover:text-gray-300"
@@ -602,11 +626,11 @@ export default function Header() {
             ))}
 
             <div
-              className="relative pointer-events-auto"
+              className="relative"
               onMouseEnter={() => setNavMoreOpen(true)}
               onMouseLeave={() => setNavMoreOpen(false)}
             >
-              <button className="flex items-center gap-1 text-gray-400 hover:text-gray-300 whitespace-nowrap">
+              <button className="flex items-center gap-1 text-gray-400 hover:text-gray-300 whitespace-nowrap text-sm sm:text-base">
                 <span>More</span>
                 <svg
                   width="16"

@@ -106,18 +106,18 @@ export default function FilterSection({
   return (
     <div className="bg-[#1D2B3A]">
       {/* Search and Filter Bar */}
-      <div className="flex items-center gap-4 px-[6%] py-3">
+      <div className="flex items-center gap-2 sm:gap-4 px-3 sm:px-[6%] py-3">
         {/* Search */}
-        <div className="relative w-53">
+        <div className="relative flex-1 sm:flex-none sm:w-53">
           <input
             type="text"
             placeholder="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#2f3f50] text-white placeholder-gray-400 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-[#2f3f50] text-white placeholder-gray-400 rounded-lg px-3 sm:px-4 py-2 pl-8 sm:pl-10 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             width="16"
             height="16"
             viewBox="0 0 24 24"
@@ -133,7 +133,7 @@ export default function FilterSection({
         {/* Filter Icon */}
         <button
           onClick={() => setFiltersVisible(!filtersVisible)}
-          className={`p-2 ${
+          className={`p-2 shrink-0 ${
             filtersVisible ? "text-white" : "text-gray-400 hover:text-white"
           }`}
         >
@@ -155,7 +155,7 @@ export default function FilterSection({
         </button>
 
         {/* Bookmark Icon */}
-        <button className="p-2 text-gray-400 hover:text-white">
+        <button className="p-2 text-gray-400 hover:text-white shrink-0">
           <svg
             width="20"
             height="20"
@@ -168,11 +168,11 @@ export default function FilterSection({
           </svg>
         </button>
 
-        {/* Vertical Separator */}
-        <div className="h-6 w-px bg-gray-600"></div>
+        {/* Vertical Separator - hidden on mobile */}
+        <div className="h-6 w-px bg-gray-600 hidden sm:block"></div>
 
-        {/* Tags Container with Overlay Arrows */}
-        <div className="flex-1 relative flex items-center min-w-0">
+        {/* Tags Container with Overlay Arrows - hidden on mobile (shown below on mobile) */}
+        <div className="hidden sm:flex flex-1 relative items-center min-w-0">
           {/* Left Arrow - Overlayed on left side */}
           <div
             className={`absolute top-0 bottom-0 z-10 flex items-center pointer-events-none ${
@@ -205,12 +205,11 @@ export default function FilterSection({
           >
             <button
               onClick={() => notifyChange({ activeTag: "All" })}
-              className={`whitespace-nowrap m-0 px-3 py-1.5 rounded-md ${
+              className={`whitespace-nowrap m-0 px-3 py-1.5 rounded-md text-sm ${
                 activeTag === "All"
                   ? "bg-[#20415A] text-[#2C9CDB]"
                   : "text-gray-400 hover:text-white"
               }`}
-              style={{ fontSize: "15px" }}
             >
               All
             </button>
@@ -231,12 +230,11 @@ export default function FilterSection({
               <button
                 key={index}
                 onClick={() => notifyChange({ activeTag: tag })}
-                className={`whitespace-nowrap shrink-0 m-0 px-3 py-1.5 rounded-md ${
+                className={`whitespace-nowrap shrink-0 m-0 px-2 sm:px-3 py-1.5 rounded-md text-sm ${
                   activeTag === tag
                     ? "bg-[#20415A] text-[#2C9CDB]"
                     : "text-gray-400 hover:text-white"
                 }`}
-                style={{ fontSize: "15px" }}
               >
                 {tag}
               </button>
@@ -268,17 +266,46 @@ export default function FilterSection({
         </div>
       </div>
 
+      {/* Mobile Tags Row - Only shown on mobile */}
+      <div className="sm:hidden px-3 pb-3">
+        <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <button
+            onClick={() => notifyChange({ activeTag: "All" })}
+            className={`whitespace-nowrap shrink-0 px-3 py-1.5 rounded-md text-sm ${
+              activeTag === "All"
+                ? "bg-[#20415A] text-[#2C9CDB]"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            All
+          </button>
+          {tags.slice(1).map((tag, index) => (
+            <button
+              key={index}
+              onClick={() => notifyChange({ activeTag: tag })}
+              className={`whitespace-nowrap shrink-0 px-3 py-1.5 rounded-md text-sm ${
+                activeTag === tag
+                  ? "bg-[#20415A] text-[#2C9CDB]"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Sorting and Options - Only visible when filter button is clicked */}
       {filtersVisible && (
-        <div className="flex items-center gap-2 px-[6%] py-3 border-t border-[#2A3F54]">
+        <div className="flex flex-wrap items-center gap-2 px-3 sm:px-[6%] py-3 border-t border-[#2A3F54]">
           {/* Sort By */}
           <div className="relative">
             <button
               onClick={() => setSortOpen(!sortOpen)}
               className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
             >
-              <span className="text-sm text-gray-400">Sort by:</span>
-              <span className="text-sm font-medium">{sortBy}</span>
+              <span className="text-xs sm:text-sm text-gray-400 hidden sm:inline">Sort by:</span>
+              <span className="text-xs sm:text-sm font-medium">{sortBy}</span>
               <svg
                 width="16"
                 height="16"
@@ -443,8 +470,8 @@ export default function FilterSection({
               onClick={() => setFrequencyOpen(!frequencyOpen)}
               className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
             >
-              <span className="text-sm text-gray-400">Frequency:</span>
-              <span className="text-sm font-medium">{frequency}</span>
+              <span className="text-xs sm:text-sm text-gray-400 hidden sm:inline">Frequency:</span>
+              <span className="text-xs sm:text-sm font-medium">{frequency}</span>
               <svg
                 width="16"
                 height="16"
@@ -507,8 +534,8 @@ export default function FilterSection({
               onClick={() => setStatusOpen(!statusOpen)}
               className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
             >
-              <span className="text-sm text-gray-400">Status:</span>
-              <span className="text-sm font-medium">{status}</span>
+              <span className="text-xs sm:text-sm text-gray-400 hidden sm:inline">Status:</span>
+              <span className="text-xs sm:text-sm font-medium">{status}</span>
               <svg
                 width="16"
                 height="16"
@@ -546,8 +573,8 @@ export default function FilterSection({
             )}
           </div>
 
-          {/* Checkboxes */}
-          <div className="flex items-center gap-2">
+          {/* Checkboxes - Hidden on mobile */}
+          <div className="hidden md:flex items-center gap-2">
             <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors">
               <span>Hide sports?</span>
               <input

@@ -258,8 +258,8 @@ export default function EventsGrid({
 
   if (loading) {
     return (
-      <div className="px-[6%] py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="px-3 sm:px-[6%] py-4 sm:py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[...Array(12)].map((_, i) => (
             <div
               key={i}
@@ -282,8 +282,8 @@ export default function EventsGrid({
 
   if (error) {
     return (
-      <div className="px-[6%] py-8">
-        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-6 text-center">
+      <div className="px-3 sm:px-[6%] py-4 sm:py-8">
+        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 sm:p-6 text-center">
           <p className="text-red-400 font-medium mb-2">Failed to load events</p>
           <p className="text-gray-400 text-sm">{error}</p>
           <button
@@ -299,8 +299,8 @@ export default function EventsGrid({
 
   if (events.length === 0) {
     return (
-      <div className="px-[6%] py-8">
-        <div className="bg-[#2A3F54] rounded-lg p-8 text-center">
+      <div className="px-3 sm:px-[6%] py-4 sm:py-8">
+        <div className="bg-[#2A3F54] rounded-lg p-6 sm:p-8 text-center">
           <svg
             className="mx-auto mb-4 text-gray-400"
             width="48"
@@ -323,8 +323,8 @@ export default function EventsGrid({
   }
 
   return (
-    <div className="px-[6%] pb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="px-3 sm:px-[6%] pb-4 sm:pb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {events.map((event, index) => {
           if (events.length === index + 1) {
             // Last element - attach ref for intersection observer
@@ -354,8 +354,8 @@ export default function EventsGrid({
 
       {/* Loading more indicator */}
       {loadingMore && (
-        <div className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="mt-4 sm:mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}

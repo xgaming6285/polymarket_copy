@@ -66,15 +66,15 @@ export default function EventPageContent({
   }
 
   return (
-    <div className="px-[6%] py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
+    <div className="px-3 sm:px-[6%] py-4 sm:py-8 overflow-x-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4 sm:gap-6">
         {/* Left Column - Header & Main Content */}
-        <div className="min-w-0">
+        <div className="min-w-0 overflow-hidden">
           {/* Event Header Info */}
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-8">
             <div className="flex gap-3 items-start">
               {event.image && (
-                <div className="relative w-[64px] h-[64px] shrink-0">
+                <div className="relative w-[48px] h-[48px] sm:w-[64px] sm:h-[64px] shrink-0">
                   <Image
                     src={event.image}
                     alt={event.title}
@@ -85,12 +85,11 @@ export default function EventPageContent({
                 </div>
               )}
               <h1
-                className="font-bold"
+                className="font-bold text-lg sm:text-2xl"
                 style={{
                   fontFamily: '"Open Sauce One", sans-serif',
-                  fontSize: "24px",
                   lineHeight: "1.3",
-                  marginTop: "14px",
+                  marginTop: "8px",
                 }}
               >
                 {event.title}
@@ -155,15 +154,15 @@ export default function EventPageContent({
           </div>
 
           {/* Main Content - Chart & List */}
-          <div className="space-y-6">
-            <div className="bg-transparent rounded-lg h-[350px]">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-transparent rounded-lg h-[250px] sm:h-[350px]">
               <EventChartContainer tokens={chartTokens} />
             </div>
 
             {/* Outcomes List */}
             <div className="flex flex-col">
-              {/* Table Headers */}
-              <div className="grid grid-cols-[1fr_140px_1fr] items-center px-4 pb-2">
+              {/* Table Headers - Responsive */}
+              <div className="hidden sm:grid grid-cols-[1fr_100px_auto] lg:grid-cols-[1fr_140px_1fr] items-center px-2 sm:px-4 pb-2">
                 <div className="flex items-center justify-start">
                   <span 
                     className="text-[#899cb2] font-bold tracking-wider"

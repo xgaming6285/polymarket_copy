@@ -244,10 +244,10 @@ export default function TradePanel({
   };
 
   return (
-    <div className="bg-transparent rounded-lg p-4 w-full max-w-[360px] ml-auto border border-[#2C3F52]">
+    <div className="bg-transparent rounded-lg p-3 sm:p-4 w-full lg:max-w-[360px] lg:ml-auto border border-[#2C3F52]">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="relative w-12 h-12 shrink-0 bg-[#00C08B] rounded-lg flex items-center justify-center">
+      <div className="flex items-center gap-3 mb-4 sm:mb-6">
+        <div className="relative w-10 h-10 sm:w-12 sm:h-12 shrink-0 bg-[#00C08B] rounded-lg flex items-center justify-center">
           {selectedOutcome.image || eventImage ? (
             <NextImage
               src={selectedOutcome.image || eventImage || ""}
@@ -271,8 +271,8 @@ export default function TradePanel({
             </svg>
           )}
         </div>
-        <div>
-          <h2 className="font-bold text-white text-2xl leading-tight line-clamp-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-bold text-white text-lg sm:text-2xl leading-tight line-clamp-2">
             {selectedOutcome.title}
           </h2>
         </div>

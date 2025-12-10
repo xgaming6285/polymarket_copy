@@ -325,10 +325,10 @@ export default function OrderBookPanel({
   return (
     <div className="bg-transparent rounded-lg border border-[#374E65] overflow-hidden">
       {/* Tabs */}
-      <div className="flex border-b border-[#374E65]">
+      <div className="flex flex-wrap border-b border-[#374E65]">
         <button
           onClick={() => setActiveTab("orderbook")}
-          className={`px-6 py-3 text-sm font-semibold transition-colors ${
+          className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors ${
             activeTab === "orderbook"
               ? "text-white border-b-2 border-white bg-transparent"
               : "text-[#818a95] hover:text-white"
@@ -338,7 +338,7 @@ export default function OrderBookPanel({
         </button>
         <button
           onClick={() => setActiveTab("graph")}
-          className={`px-6 py-3 text-sm font-semibold transition-colors ${
+          className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors ${
             activeTab === "graph"
               ? "text-white border-b-2 border-white bg-transparent"
               : "text-[#818a95] hover:text-white"
@@ -348,7 +348,7 @@ export default function OrderBookPanel({
         </button>
         <button
           onClick={() => setActiveTab("resolution")}
-          className={`px-6 py-3 text-sm font-semibold transition-colors ${
+          className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors ${
             activeTab === "resolution"
               ? "text-white border-b-2 border-white bg-transparent"
               : "text-[#818a95] hover:text-white"
@@ -357,8 +357,8 @@ export default function OrderBookPanel({
           Resolution
         </button>
 
-        {/* Right side - Rewards */}
-        <div className="ml-auto flex items-center gap-2 px-4">
+        {/* Right side - Rewards (hidden on very small screens) */}
+        <div className="ml-auto hidden sm:flex items-center gap-2 px-4">
           <span className="text-[#00C08B] text-sm font-medium">Rewards</span>
           <svg
             className="w-4 h-4 text-[#818a95]"
@@ -374,7 +374,7 @@ export default function OrderBookPanel({
       </div>
 
       {activeTab === "orderbook" && (
-        <div className="p-4">
+        <div className="p-2 sm:p-4 overflow-x-auto">
           {/* Trade Side Toggle */}
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[#818a95] text-xs font-medium uppercase tracking-wider">
@@ -401,7 +401,7 @@ export default function OrderBookPanel({
               No
             </button>
             <svg
-              className="w-4 h-4 text-[#818a95] ml-1"
+              className="w-4 h-4 text-[#818a95] ml-1 hidden sm:block"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -415,7 +415,7 @@ export default function OrderBookPanel({
           </div>
 
           {/* Column Headers */}
-          <div className="grid grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-2 text-xs text-[#818a95] font-medium uppercase tracking-wider mb-2 px-2">
+          <div className="grid grid-cols-[40px_1fr_1fr_1fr] sm:grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-1 sm:gap-2 text-[10px] sm:text-xs text-[#818a95] font-medium uppercase tracking-wider mb-2 px-1 sm:px-2">
             <div></div>
             <div className="text-right">Price</div>
             <div className="text-right">Shares</div>
@@ -439,7 +439,7 @@ export default function OrderBookPanel({
                   return (
                     <div
                       key={`ask-${i}`}
-                      className="relative grid grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-2 py-1.5 px-2 hover:bg-[#2C3F52]/50 cursor-pointer group"
+                      className="relative grid grid-cols-[40px_1fr_1fr_1fr] sm:grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-1 sm:gap-2 py-1.5 px-1 sm:px-2 hover:bg-[#2C3F52]/50 cursor-pointer group"
                     >
                       {/* Depth bar - from right */}
                       <div
@@ -448,13 +448,13 @@ export default function OrderBookPanel({
                       />
 
                       <div className="relative z-10"></div>
-                      <div className="relative z-10 text-right text-[#e13737] font-mono text-sm">
+                      <div className="relative z-10 text-right text-[#e13737] font-mono text-[10px] sm:text-sm">
                         {formatPrice(ask.price)}
                       </div>
-                      <div className="relative z-10 text-right text-white font-mono text-sm">
+                      <div className="relative z-10 text-right text-white font-mono text-[10px] sm:text-sm">
                         {formatShares(ask.shares)}
                       </div>
-                      <div className="relative z-10 text-right text-[#818a95] font-mono text-sm">
+                      <div className="relative z-10 text-right text-[#818a95] font-mono text-[10px] sm:text-sm">
                         {formatTotal(ask.total)}
                       </div>
                     </div>
@@ -491,7 +491,7 @@ export default function OrderBookPanel({
                   return (
                     <div
                       key={`bid-${i}`}
-                      className="relative grid grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-2 py-1.5 px-2 hover:bg-[#2C3F52]/50 cursor-pointer group"
+                      className="relative grid grid-cols-[40px_1fr_1fr_1fr] sm:grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-1 sm:gap-2 py-1.5 px-1 sm:px-2 hover:bg-[#2C3F52]/50 cursor-pointer group"
                     >
                       {/* Depth bar - from right */}
                       <div
@@ -500,13 +500,13 @@ export default function OrderBookPanel({
                       />
 
                       <div className="relative z-10"></div>
-                      <div className="relative z-10 text-right text-[#00C08B] font-mono text-sm">
+                      <div className="relative z-10 text-right text-[#00C08B] font-mono text-[10px] sm:text-sm">
                         {formatPrice(bid.price)}
                       </div>
-                      <div className="relative z-10 text-right text-white font-mono text-sm">
+                      <div className="relative z-10 text-right text-white font-mono text-[10px] sm:text-sm">
                         {formatShares(bid.shares)}
                       </div>
-                      <div className="relative z-10 text-right text-[#818a95] font-mono text-sm">
+                      <div className="relative z-10 text-right text-[#818a95] font-mono text-[10px] sm:text-sm">
                         {formatTotal(bid.total)}
                       </div>
                     </div>
