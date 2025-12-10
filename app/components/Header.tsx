@@ -158,7 +158,7 @@ export default function Header() {
           </div>
 
           {/* Mobile search icon */}
-          <button className="md:hidden bg-[#2f3f50] p-2 rounded-lg text-gray-400">
+          <button className="md:hidden bg-transparent p-2 rounded-lg text-gray-400">
             <svg
               width="16"
               height="16"
@@ -568,9 +568,9 @@ export default function Header() {
             {/* Trending - Special First Item */}
             <Link
               href="/"
-              className={`flex items-center gap-1 sm:gap-2 whitespace-nowrap text-sm sm:text-base ${
+              className={`flex items-center gap-1 sm:gap-2 whitespace-nowrap text-base font-semibold ${
                 isActive("Trending")
-                  ? "text-white border-b-2 border-white"
+                  ? "text-white"
                   : "text-gray-400 hover:text-gray-300"
               }`}
             >
@@ -590,9 +590,9 @@ export default function Header() {
             </Link>
             <Link
               href="/breaking"
-              className={`whitespace-nowrap text-sm sm:text-base ${
+              className={`whitespace-nowrap text-base font-semibold ${
                 isActive("Breaking")
-                  ? "text-white border-b-2 border-white"
+                  ? "text-white"
                   : "text-gray-400 hover:text-gray-300"
               }`}
             >
@@ -600,9 +600,9 @@ export default function Header() {
             </Link>
             <Link
               href="/?sort=new"
-              className={`whitespace-nowrap text-sm sm:text-base ${
+              className={`whitespace-nowrap text-base font-semibold ${
                 isActive("New")
-                  ? "text-white border-b-2 border-white"
+                  ? "text-white"
                   : "text-gray-400 hover:text-gray-300"
               }`}
             >
@@ -615,9 +615,9 @@ export default function Header() {
               <Link
                 key={index}
                 href={`/?tag=${category}`}
-                className={`whitespace-nowrap text-sm sm:text-base ${
+                className={`whitespace-nowrap text-base font-semibold ${
                   isActive(category)
-                    ? "text-white border-b-2 border-white"
+                    ? "text-white"
                     : "text-gray-400 hover:text-gray-300"
                 }`}
               >
@@ -630,7 +630,7 @@ export default function Header() {
               onMouseEnter={() => setNavMoreOpen(true)}
               onMouseLeave={() => setNavMoreOpen(false)}
             >
-              <button className="flex items-center gap-1 text-gray-400 hover:text-gray-300 whitespace-nowrap text-sm sm:text-base">
+              <button className="flex items-center gap-1 text-gray-400 hover:text-gray-300 whitespace-nowrap text-base font-semibold">
                 <span>More</span>
                 <svg
                   width="16"

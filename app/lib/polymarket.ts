@@ -305,21 +305,42 @@ export async function fetchTags(): Promise<Tag[]> {
 }
 
 export async function fetchRelatedTags(tag: string): Promise<string[]> {
-  // First, we need to determine the slug to query
-  // For "All" or "Trending", we fetch from the main /tags endpoint and extract popular tags
-  // For other categories, we use the filteredBySlug endpoint
+  // For "All" or "Trending", use tag=all to get the main subcategories
+  // For other categories, use the specific category slug
 
   try {
-    if (tag === "All" || tag === "Trending") {
-      // Fetch all tags and return a curated list for trending
-      const allTags = await fetchTags();
+    // Determine the query tag - for "All" or "Trending", use "all"
+    const queryTag = (tag === "All" || tag === "Trending") ? "all" : null;
+    
+    if (queryTag === "all") {
+      // Use the official endpoint: /api/tags/filteredBySlug?tag=all&status=active
+      const url = `${API_BASE}/tags/filtered?tag=all&status=active`;
 
-      // For trending/all, we could either:
-      // 1. Return all tag labels
-      // 2. Return a subset of popular tags
-      // Let's return the first 30 tags as a reasonable default
-      const trendingTags = ["All", ...allTags.slice(0, 30).map((t) => t.label)];
-      return trendingTags;
+      const response = await fetch(url, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (response.ok) {
+        const data: {
+          id: string;
+          label: string;
+          slug: string;
+          forceShow?: boolean;
+          forceHide?: boolean;
+        }[] = await response.json();
+
+        // Return all tags in order (they come sorted from the API)
+        // Exclude tags with forceHide: true
+        const tags = data
+          .filter((t) => t.forceHide !== true)
+          .map((t) => t.label);
+
+        console.log(`[fetchRelatedTags] ${tag} -> all -> ${tags.length} tags`);
+        return ["All", ...tags];
+      }
+
+      return ["All"];
     }
 
     // Special mappings for categories that don't match tag slugs exactly
@@ -347,7 +368,7 @@ export async function fetchRelatedTags(tag: string): Promise<string[]> {
     // Now fetch related tags using the filteredBySlug endpoint
     const url = `${API_BASE}/tags/filtered?tag=${encodeURIComponent(
       querySlug
-    )}`;
+    )}&status=active`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -374,8 +395,15 @@ export async function fetchRelatedTags(tag: string): Promise<string[]> {
       updatedBy?: number;
     }[] = await response.json();
 
-    // Return all tags without filtering (show both forceShow true/false and forceHide true/false)
-    const tags = ["All", ...data.map((t) => t.label)];
+    // Prioritize tags with forceShow: true, then others (excluding forceHide: true)
+    const forceShowTags = data
+      .filter((t) => t.forceShow === true)
+      .map((t) => t.label);
+    const otherTags = data
+      .filter((t) => t.forceShow !== true && t.forceHide !== true)
+      .map((t) => t.label);
+
+    const tags = ["All", ...forceShowTags, ...otherTags];
     console.log(
       `[fetchRelatedTags] ${tag} -> ${querySlug} -> ${tags.length} tags:`,
       tags

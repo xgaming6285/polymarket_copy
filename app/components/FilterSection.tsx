@@ -114,7 +114,7 @@ export default function FilterSection({
             placeholder="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#2f3f50] text-white placeholder-gray-400 rounded-lg px-3 sm:px-4 py-2 pl-8 sm:pl-10 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-transparent text-white placeholder-gray-400 rounded-lg px-3 sm:px-4 py-2 pl-8 sm:pl-10 text-base border border-[#374E65] focus:outline-none focus:border-[#4a637b]"
           />
           <svg
             className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -133,9 +133,7 @@ export default function FilterSection({
         {/* Filter Icon */}
         <button
           onClick={() => setFiltersVisible(!filtersVisible)}
-          className={`p-2 shrink-0 ${
-            filtersVisible ? "text-white" : "text-gray-400 hover:text-white"
-          }`}
+          className="p-2 shrink-0 text-white hover:text-gray-300"
         >
           <svg
             width="20"
@@ -155,7 +153,7 @@ export default function FilterSection({
         </button>
 
         {/* Bookmark Icon */}
-        <button className="p-2 text-gray-400 hover:text-white shrink-0">
+        <button className="p-2 text-white hover:text-gray-300 shrink-0">
           <svg
             width="20"
             height="20"
@@ -266,60 +264,32 @@ export default function FilterSection({
         </div>
       </div>
 
-      {/* Mobile Tags Row - Only shown on mobile */}
-      <div className="sm:hidden px-3 pb-3">
-        <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          <button
-            onClick={() => notifyChange({ activeTag: "All" })}
-            className={`whitespace-nowrap shrink-0 px-3 py-1.5 rounded-md text-sm ${
-              activeTag === "All"
-                ? "bg-[#20415A] text-[#2C9CDB]"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            All
-          </button>
-          {tags.slice(1).map((tag, index) => (
-            <button
-              key={index}
-              onClick={() => notifyChange({ activeTag: tag })}
-              className={`whitespace-nowrap shrink-0 px-3 py-1.5 rounded-md text-sm ${
-                activeTag === tag
-                  ? "bg-[#20415A] text-[#2C9CDB]"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sorting and Options - Only visible when filter button is clicked */}
+      {/* Sorting and Options - Only visible when filter button is clicked - Now appears BEFORE tags on mobile */}
       {filtersVisible && (
-        <div className="flex flex-wrap items-center gap-2 px-3 sm:px-[6%] py-3 border-t border-[#2A3F54]">
-          {/* Sort By */}
-          <div className="relative">
+        <div className="flex items-center gap-1.5 sm:gap-3 px-3 sm:px-[6%] pt-0 pb-2 sm:py-3 sm:border-t sm:border-[#2A3F54]">
+          {/* Sort By - Mobile optimized with transparent background */}
+          <div className="relative flex-1">
             <button
               onClick={() => setSortOpen(!sortOpen)}
-              className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
+              className="w-full flex items-center justify-center gap-1 sm:gap-2 text-white bg-transparent hover:bg-[#2A3F54]/50 px-2 sm:px-4 py-1.5 sm:py-2.5 rounded-full transition-colors border border-[#374E65]"
             >
-              <span className="text-xs sm:text-sm text-gray-400 hidden sm:inline">Sort by:</span>
-              <span className="text-xs sm:text-sm font-medium">{sortBy}</span>
+              <span className="text-xs sm:text-base text-gray-400">Sort by:</span>
+              <span className="text-xs sm:text-base font-medium">{sortBy}</span>
               <svg
-                width="16"
-                height="16"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                className="sm:w-4 sm:h-4"
               >
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
 
             {sortOpen && (
-              <div className="absolute left-0 mt-2 w-48 bg-[#2A3F54] rounded-lg shadow-lg py-2 z-50">
+              <div className="absolute left-0 mt-2 w-48 bg-[#2A3F54] rounded-lg shadow-lg py-2 z-[9999]">
                 <button
                   onClick={() => {
                     notifyChange({ sortBy: "Trending" });
@@ -464,28 +434,29 @@ export default function FilterSection({
             )}
           </div>
 
-          {/* Frequency */}
-          <div className="relative">
+          {/* Frequency - Mobile optimized with transparent background */}
+          <div className="relative flex-1">
             <button
               onClick={() => setFrequencyOpen(!frequencyOpen)}
-              className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
+              className="w-full flex items-center justify-center gap-1 sm:gap-2 text-white bg-transparent hover:bg-[#2A3F54]/50 px-2 sm:px-4 py-1.5 sm:py-2.5 rounded-full transition-colors border border-[#374E65]"
             >
-              <span className="text-xs sm:text-sm text-gray-400 hidden sm:inline">Frequency:</span>
-              <span className="text-xs sm:text-sm font-medium">{frequency}</span>
+              <span className="text-xs sm:text-base text-gray-400">Frequency:</span>
+              <span className="text-xs sm:text-base font-medium">{frequency}</span>
               <svg
-                width="16"
-                height="16"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                className="sm:w-4 sm:h-4"
               >
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
 
             {frequencyOpen && (
-              <div className="absolute left-0 mt-2 w-32 bg-[#2A3F54] rounded-lg shadow-lg py-2 z-50">
+              <div className="absolute left-0 mt-2 w-32 bg-[#2A3F54] rounded-lg shadow-lg py-2 z-[9999]">
                 <button
                   onClick={() => {
                     setFrequency("Daily");
@@ -528,28 +499,29 @@ export default function FilterSection({
             )}
           </div>
 
-          {/* Status */}
-          <div className="relative">
+          {/* Status - Mobile optimized with transparent background */}
+          <div className="relative flex-1">
             <button
               onClick={() => setStatusOpen(!statusOpen)}
-              className="flex items-center gap-1 text-white hover:bg-[#4a637b] bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors"
+              className="w-full flex items-center justify-center gap-1 sm:gap-2 text-white bg-transparent hover:bg-[#2A3F54]/50 px-2 sm:px-4 py-1.5 sm:py-2.5 rounded-full transition-colors border border-[#374E65]"
             >
-              <span className="text-xs sm:text-sm text-gray-400 hidden sm:inline">Status:</span>
-              <span className="text-xs sm:text-sm font-medium">{status}</span>
+              <span className="text-xs sm:text-base text-gray-400">Status:</span>
+              <span className="text-xs sm:text-base font-medium">{status}</span>
               <svg
-                width="16"
-                height="16"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                className="sm:w-4 sm:h-4"
               >
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
 
             {statusOpen && (
-              <div className="absolute left-0 mt-2 w-32 bg-[#2A3F54] rounded-lg shadow-lg py-2 z-50">
+              <div className="absolute left-0 mt-2 w-32 bg-[#2A3F54] rounded-lg shadow-lg py-2 z-[9999]">
                 <button
                   onClick={() => {
                     setStatus("Active");
@@ -575,7 +547,7 @@ export default function FilterSection({
 
           {/* Checkboxes - Hidden on mobile */}
           <div className="hidden md:flex items-center gap-2">
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors">
+            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-transparent border border-[#374E65] px-3 py-2 rounded-full transition-colors">
               <span>Hide sports?</span>
               <input
                 type="checkbox"
@@ -584,7 +556,7 @@ export default function FilterSection({
                 className="appearance-none w-4 h-4 rounded-sm border border-gray-500 bg-transparent checked:bg-blue-500 checked:border-blue-500 focus:outline-none focus:ring-0 focus:ring-offset-0 bg-center bg-no-repeat checked:bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')]"
               />
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors">
+            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-transparent border border-[#374E65] px-3 py-2 rounded-full transition-colors">
               <span>Hide crypto?</span>
               <input
                 type="checkbox"
@@ -593,7 +565,7 @@ export default function FilterSection({
                 className="appearance-none w-4 h-4 rounded-sm border border-gray-500 bg-transparent checked:bg-blue-500 checked:border-blue-500 focus:outline-none focus:ring-0 focus:ring-offset-0 bg-center bg-no-repeat checked:bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M12.207%204.793a1%201%200%20010%201.414l-5%205a1%201%200%2001-1.414%200l-2-2a1%201%200%20011.414-1.414L6.5%209.086l4.293-4.293a1%201%200%20011.414%200z%22%2F%3E%3C%2Fsvg%3E')]"
               />
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-[#3D5266] px-2 py-1.5 rounded-full transition-colors">
+            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer hover:text-white bg-transparent border border-[#374E65] px-3 py-2 rounded-full transition-colors">
               <span>Hide earnings?</span>
               <input
                 type="checkbox"
@@ -605,6 +577,35 @@ export default function FilterSection({
           </div>
         </div>
       )}
+
+      {/* Mobile Tags Row - Only shown on mobile - Now appears AFTER filters */}
+      <div className="sm:hidden px-3 pb-3">
+        <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <button
+            onClick={() => notifyChange({ activeTag: "All" })}
+            className={`whitespace-nowrap shrink-0 px-3 py-1.5 rounded-md text-sm ${
+              activeTag === "All"
+                ? "bg-[#20415A] text-[#2C9CDB]"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            All
+          </button>
+          {tags.slice(1).map((tag, index) => (
+            <button
+              key={index}
+              onClick={() => notifyChange({ activeTag: tag })}
+              className={`whitespace-nowrap shrink-0 px-3 py-1.5 rounded-md text-sm ${
+                activeTag === tag
+                  ? "bg-[#20415A] text-[#2C9CDB]"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
