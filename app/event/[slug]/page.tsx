@@ -100,6 +100,8 @@ export default async function EventPage({
         const title = m.groupItemTitle || m.question || "";
         if (title.startsWith("Country ") && title.length === 9) return false; // Matches "Country X"
         if (title === "Other") return false; // Filter out "Other" from main list if needed
+        // Filter out placeholder "Person X" or "Person XX" markets (e.g., "Person N", "Person AA", "Person BQ")
+        if (/^Person [A-Z]{1,2}$/.test(title)) return false;
         return true;
       })
       .flatMap((m: ApiMarket) => {

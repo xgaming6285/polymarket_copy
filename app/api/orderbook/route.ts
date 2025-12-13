@@ -15,22 +15,33 @@ export async function GET(request: NextRequest) {
     }
 
     const url = `${CLOB_API_BASE}/book?token_id=${tokenId}`;
-    
-    console.log("Fetching order book from:", url);
+
+    // console.log("Fetching order book from:", url);
 
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       cache: "no-store",
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+
+      // Handle 404 (No orderbook) gracefully by returning empty book instead of error
+      // This prevents 404 logs in the console
+      if (response.status === 404) {
+        return NextResponse.json({
+          bids: [],
+          asks: [],
+        });
+      }
+
       console.error(
         `Failed to fetch order book: ${response.status} ${response.statusText} - ${errorText}`
       );
+
       return NextResponse.json(
         { error: `Failed to fetch order book: ${response.statusText}` },
         { status: response.status }
@@ -47,4 +58,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

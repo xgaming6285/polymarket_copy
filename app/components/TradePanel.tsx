@@ -453,15 +453,7 @@ export default function TradePanel({
         </div>
       )}
 
-      {/* Balance Display - only show after mount to avoid hydration mismatch */}
-      {hasMounted && user && stats && (
-        <div className="mb-3 text-sm text-gray-400 text-right">
-          Available:{" "}
-          <span className="text-white font-semibold">
-            ${stats.cashBalance.toLocaleString()}
-          </span>
-        </div>
-      )}
+      {/* Balance Display - Removed as per request */}
 
       {/* Trade Button - use consistent initial state for SSR */}
       <button

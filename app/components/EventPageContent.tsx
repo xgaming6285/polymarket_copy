@@ -39,12 +39,16 @@ export default function EventPageContent({
   >(outcomes[0]);
   const [selectedSide, setSelectedSide] = useState<"Yes" | "No">("Yes");
 
-  // Reset side when outcome changes (optional, but mimics previous behavior)
+  // Toggle outcome selection - clicking same outcome again hides the panel
   const handleOutcomeSelect = (outcome: OutcomeItem) => {
-    setSelectedOutcome(outcome);
-    setSelectedSide("Yes"); // Reset to Yes default when switching outcomes, or keep as is?
-    // Usually defaulting to Yes is safer unless we want to preserve side across outcomes.
-    // Let's default to Yes.
+    if (selectedOutcome?.id === outcome.id) {
+      // Clicking the same outcome again - hide the panel
+      setSelectedOutcome(undefined);
+    } else {
+      // Clicking a different outcome - show it
+      setSelectedOutcome(outcome);
+      setSelectedSide("Yes"); // Reset to Yes default when switching outcomes
+    }
   };
 
   const handleSideSelect = (side: "Yes" | "No") => {
@@ -58,7 +62,7 @@ export default function EventPageContent({
     price: o.price,
   }));
 
-  if (!selectedOutcome) {
+  if (outcomes.length === 0) {
     return (
       <div className="px-[6%] py-8 text-center text-gray-400">
         No active markets found for this event.
@@ -191,46 +195,54 @@ export default function EventPageContent({
               </div>
 
               {outcomes.map((outcome, index) => (
-                <OutcomeRow
-                  key={outcome.id}
-                  outcome={outcome}
-                  isSelected={selectedOutcome.id === outcome.id}
-                  onSelect={handleOutcomeSelect}
-                  selectedSide={
-                    selectedOutcome.id === outcome.id ? selectedSide : undefined
-                  }
-                  onSideSelect={handleSideSelect}
-                  isFirst={index === 0}
-                  eventImage={event.image}
-                />
+                <div key={outcome.id}>
+                  <OutcomeRow
+                    outcome={outcome}
+                    isSelected={selectedOutcome?.id === outcome.id}
+                    onSelect={handleOutcomeSelect}
+                    selectedSide={
+                      selectedOutcome?.id === outcome.id
+                        ? selectedSide
+                        : undefined
+                    }
+                    onSideSelect={handleSideSelect}
+                    isFirst={index === 0}
+                    eventImage={event.image}
+                  />
+                  {/* Order Book Panel - Shows inline below the selected outcome */}
+                  {selectedOutcome?.id === outcome.id && (
+                    <div className="border-b border-[#374E65]">
+                      <OrderBookPanel
+                        yesTokenId={selectedOutcome.yesTokenId}
+                        noTokenId={selectedOutcome.noTokenId}
+                        outcomeTitle={selectedOutcome.title}
+                        selectedSide={selectedSide}
+                      />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-
-            {/* Order Book Panel - Shows when an outcome is selected */}
-            {selectedOutcome && (
-              <div className="mt-6">
-                <OrderBookPanel
-                  yesTokenId={selectedOutcome.yesTokenId}
-                  noTokenId={selectedOutcome.noTokenId}
-                  outcomeTitle={selectedOutcome.title}
-                  selectedSide={selectedSide}
-                />
-              </div>
-            )}
           </div>
         </div>
 
         {/* Right Column - Trade Panel */}
         <div className="space-y-6">
           <div className="sticky top-4">
-            <TradePanel
-              selectedOutcome={selectedOutcome}
-              eventId={event.id}
-              eventTitle={event.title}
-              eventImage={event.image}
-              selectedSide={selectedSide}
-              onSideChange={handleSideSelect}
-            />
+            {selectedOutcome ? (
+              <TradePanel
+                selectedOutcome={selectedOutcome}
+                eventId={event.id}
+                eventTitle={event.title}
+                eventImage={event.image}
+                selectedSide={selectedSide}
+                onSideChange={handleSideSelect}
+              />
+            ) : (
+              <div className="bg-transparent rounded-lg p-4 border border-[#2C3F52] text-center text-[#818a95]">
+                <p className="text-sm">Select an outcome to trade</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

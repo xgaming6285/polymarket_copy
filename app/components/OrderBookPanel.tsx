@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   LineChart,
   Line,
@@ -322,6 +322,31 @@ export default function OrderBookPanel({
     return "$" + total.toFixed(2);
   };
 
+  // Number of items to show initially (4 asks + 4 bids)
+  const VISIBLE_ITEMS = 4;
+  const ROW_HEIGHT = 32; // Approximate height of each row in pixels
+
+  // Ref for the scrollable order book container
+  const orderBookScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to center the spread when order book data loads
+  useEffect(() => {
+    if (
+      orderBookScrollRef.current &&
+      processedAsks.length > 0 &&
+      processedBids.length > 0
+    ) {
+      const container = orderBookScrollRef.current;
+      const totalAsksHeight = processedAsks.length * ROW_HEIGHT;
+      // Scroll so that the last 4 asks are visible (spread in the middle)
+      const scrollTarget = Math.max(
+        0,
+        totalAsksHeight - VISIBLE_ITEMS * ROW_HEIGHT
+      );
+      container.scrollTop = scrollTarget;
+    }
+  }, [processedAsks.length, processedBids.length]);
+
   return (
     <div className="bg-transparent rounded-lg border border-[#374E65] overflow-hidden">
       {/* Tabs */}
@@ -422,101 +447,117 @@ export default function OrderBookPanel({
             <div className="text-right">Total</div>
           </div>
 
-          {/* Asks (Sell Orders) - Red */}
-          <div className="relative mb-1">
-            {/* Asks Label */}
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
-              <span className="bg-[#e13737] text-white text-[10px] font-bold px-2 py-0.5 rounded">
-                Asks
-              </span>
-            </div>
+          {/* Scrollable Order Book Container - Fixed height showing 4 asks + spread + 4 bids */}
+          <div
+            ref={orderBookScrollRef}
+            className="overflow-y-auto scrollbar-hide"
+            style={{
+              maxHeight: `${(VISIBLE_ITEMS * 2 + 1) * ROW_HEIGHT + 8}px`,
+              scrollbarWidth: "none" /* Firefox */,
+              msOverflowStyle: "none" /* IE and Edge */,
+            }}
+          >
+            {/* Asks (Sell Orders) - Red */}
+            <div className="relative">
+              {/* Asks Label */}
+              <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+                <span className="bg-[#e13737] text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                  Asks
+                </span>
+              </div>
 
-            <div className="flex flex-col">
-              {processedAsks.length > 0 ? (
-                processedAsks.map((ask, i) => {
-                  const depthPercent =
-                    (ask.cumulativeShares / maxCumulative) * 100;
-                  return (
-                    <div
-                      key={`ask-${i}`}
-                      className="relative grid grid-cols-[40px_1fr_1fr_1fr] sm:grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-1 sm:gap-2 py-1.5 px-1 sm:px-2 hover:bg-[#2C3F52]/50 cursor-pointer group"
-                    >
-                      {/* Depth bar - from right */}
+              <div className="flex flex-col">
+                {processedAsks.length > 0 ? (
+                  processedAsks.map((ask, i) => {
+                    const depthPercent =
+                      (ask.cumulativeShares / maxCumulative) * 100;
+                    return (
                       <div
-                        className="absolute right-0 top-0 bottom-0 bg-[#e13737]/20 transition-all"
-                        style={{ width: `${depthPercent}%` }}
-                      />
+                        key={`ask-${i}`}
+                        className="relative grid grid-cols-[40px_1fr_1fr_1fr] sm:grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-1 sm:gap-2 py-1.5 px-1 sm:px-2 hover:bg-[#2C3F52]/50 cursor-pointer group"
+                        style={{ height: `${ROW_HEIGHT}px` }}
+                      >
+                        {/* Depth bar - from right */}
+                        <div
+                          className="absolute right-0 top-0 bottom-0 bg-[#e13737]/20 transition-all"
+                          style={{ width: `${depthPercent}%` }}
+                        />
 
-                      <div className="relative z-10"></div>
-                      <div className="relative z-10 text-right text-[#e13737] font-mono text-[10px] sm:text-sm">
-                        {formatPrice(ask.price)}
+                        <div className="relative z-10"></div>
+                        <div className="relative z-10 text-right text-[#e13737] font-mono text-[10px] sm:text-sm">
+                          {formatPrice(ask.price)}
+                        </div>
+                        <div className="relative z-10 text-right text-white font-mono text-[10px] sm:text-sm">
+                          {formatShares(ask.shares)}
+                        </div>
+                        <div className="relative z-10 text-right text-[#818a95] font-mono text-[10px] sm:text-sm">
+                          {formatTotal(ask.total)}
+                        </div>
                       </div>
-                      <div className="relative z-10 text-right text-white font-mono text-[10px] sm:text-sm">
-                        {formatShares(ask.shares)}
-                      </div>
-                      <div className="relative z-10 text-right text-[#818a95] font-mono text-[10px] sm:text-sm">
-                        {formatTotal(ask.total)}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="py-4 text-center text-[#818a95] text-sm">
-                  No asks available
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Spread Divider */}
-          <div className="flex items-center justify-between py-2 px-2 border-y border-[#374E65] text-xs text-[#818a95]">
-            <span>Last: {lastPrice ? formatPrice(lastPrice) : "-"}</span>
-            <span>Spread: {spread !== null ? formatPrice(spread) : "-"}</span>
-          </div>
-
-          {/* Bids (Buy Orders) - Green */}
-          <div className="relative mt-1">
-            {/* Bids Label */}
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
-              <span className="bg-[#00C08B] text-white text-[10px] font-bold px-2 py-0.5 rounded">
-                Bids
-              </span>
+                    );
+                  })
+                ) : (
+                  <div className="py-4 text-center text-[#818a95] text-sm">
+                    No asks available
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="flex flex-col">
-              {processedBids.length > 0 ? (
-                processedBids.map((bid, i) => {
-                  const depthPercent =
-                    (bid.cumulativeShares / maxCumulative) * 100;
-                  return (
-                    <div
-                      key={`bid-${i}`}
-                      className="relative grid grid-cols-[40px_1fr_1fr_1fr] sm:grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-1 sm:gap-2 py-1.5 px-1 sm:px-2 hover:bg-[#2C3F52]/50 cursor-pointer group"
-                    >
-                      {/* Depth bar - from right */}
+            {/* Spread Divider */}
+            <div
+              className="flex items-center justify-between py-2 px-2 border-y border-[#374E65] text-xs text-[#818a95] bg-[#1d2b3a] sticky top-0 z-20"
+              style={{ height: `${ROW_HEIGHT}px` }}
+            >
+              <span>Last: {lastPrice ? formatPrice(lastPrice) : "-"}</span>
+              <span>Spread: {spread !== null ? formatPrice(spread) : "-"}</span>
+            </div>
+
+            {/* Bids (Buy Orders) - Green */}
+            <div className="relative">
+              {/* Bids Label */}
+              <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+                <span className="bg-[#00C08B] text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                  Bids
+                </span>
+              </div>
+
+              <div className="flex flex-col">
+                {processedBids.length > 0 ? (
+                  processedBids.map((bid, i) => {
+                    const depthPercent =
+                      (bid.cumulativeShares / maxCumulative) * 100;
+                    return (
                       <div
-                        className="absolute right-0 top-0 bottom-0 bg-[#00C08B]/20 transition-all"
-                        style={{ width: `${depthPercent}%` }}
-                      />
+                        key={`bid-${i}`}
+                        className="relative grid grid-cols-[40px_1fr_1fr_1fr] sm:grid-cols-[minmax(100px,1fr)_1fr_1fr_1fr] gap-1 sm:gap-2 py-1.5 px-1 sm:px-2 hover:bg-[#2C3F52]/50 cursor-pointer group"
+                        style={{ height: `${ROW_HEIGHT}px` }}
+                      >
+                        {/* Depth bar - from right */}
+                        <div
+                          className="absolute right-0 top-0 bottom-0 bg-[#00C08B]/20 transition-all"
+                          style={{ width: `${depthPercent}%` }}
+                        />
 
-                      <div className="relative z-10"></div>
-                      <div className="relative z-10 text-right text-[#00C08B] font-mono text-[10px] sm:text-sm">
-                        {formatPrice(bid.price)}
+                        <div className="relative z-10"></div>
+                        <div className="relative z-10 text-right text-[#00C08B] font-mono text-[10px] sm:text-sm">
+                          {formatPrice(bid.price)}
+                        </div>
+                        <div className="relative z-10 text-right text-white font-mono text-[10px] sm:text-sm">
+                          {formatShares(bid.shares)}
+                        </div>
+                        <div className="relative z-10 text-right text-[#818a95] font-mono text-[10px] sm:text-sm">
+                          {formatTotal(bid.total)}
+                        </div>
                       </div>
-                      <div className="relative z-10 text-right text-white font-mono text-[10px] sm:text-sm">
-                        {formatShares(bid.shares)}
-                      </div>
-                      <div className="relative z-10 text-right text-[#818a95] font-mono text-[10px] sm:text-sm">
-                        {formatTotal(bid.total)}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="py-4 text-center text-[#818a95] text-sm">
-                  No bids available
-                </div>
-              )}
+                    );
+                  })
+                ) : (
+                  <div className="py-4 text-center text-[#818a95] text-sm">
+                    No bids available
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
